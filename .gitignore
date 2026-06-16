@@ -2,6 +2,9 @@
 node_modules/
 CLIENT_PRIVATE_NOTES.md
 data/store.json
+data/*.db
+data/*.db-shm
+data/*.db-wal
 data/*.tmp
 deploy/
 *.log

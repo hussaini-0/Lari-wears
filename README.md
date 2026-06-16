@@ -49,7 +49,7 @@ npm run start:prod
 - Public brand story and policy pages for LARI
 - Product variations limited to Cord Set - Eastern, Cord Set - Western, and Shirts
 - Node.js static server and JSON API
-- Server-backed catalog, content, media, and orders in `data/store.json`
+- Server-backed catalog, content, media, and orders in SQLite at `data/store.db`
 - Protected admin login and bearer-token admin API
 - Managed product catalog and storefront publishing
 - Product add, edit, remove, image URL, pricing, category, and stock controls
@@ -65,6 +65,7 @@ npm run start:prod
 - Basic admin login rate limiting
 - Safer path validation for static file serving
 - Sanitized public rendering for catalog/cart/content data
+- SQLite database storage with automatic migration from legacy `data/store.json`
 
 See `DELIVERY.md` for the demo flow and presentation checklist.
 

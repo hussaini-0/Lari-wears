@@ -2,12 +2,14 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { createDatabase } = require("./database");
 
 const PORT = Number(process.env.PORT || 4173);
 const ADMIN_PASSWORD = process.env.LARI_ADMIN_PASSWORD || "lari-admin-2026";
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, "data");
+const DB_FILE = path.resolve(ROOT, process.env.LARI_DB_FILE || path.join("data", "store.db"));
 const STORE_FILE = path.join(DATA_DIR, "store.json");
 const sessions = new Map();
 const loginAttempts = new Map();
@@ -151,10 +153,6 @@ const defaults = {
   ]
 };
 
-function clone(value) {
-  return JSON.parse(JSON.stringify(value));
-}
-
 function cleanImageSource(value, fallback = "") {
   const source = String(value || fallback).slice(0, 200000);
   if (source.startsWith("data:image/")) return source;
@@ -166,22 +164,8 @@ function cleanImageSource(value, fallback = "") {
   }
 }
 
-function ensureStore() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(STORE_FILE)) fs.writeFileSync(STORE_FILE, JSON.stringify(defaults, null, 2));
-}
-
-function readStore() {
-  ensureStore();
-  const store = JSON.parse(fs.readFileSync(STORE_FILE, "utf8"));
-  return { ...clone(defaults), ...store, settings: { ...defaults.settings, ...(store.settings || {}) }, visibility: { ...(store.visibility || {}) } };
-}
-
-function writeStore(data) {
-  ensureStore();
-  const tmp = `${STORE_FILE}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
-  fs.renameSync(tmp, STORE_FILE);
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
 }
 
 function securityHeaders(extra = {}) {
@@ -252,7 +236,7 @@ function loginAllowed(req) {
 }
 
 function publicStore() {
-  const store = readStore();
+  const store = database.getStore();
   return {
     settings: store.settings,
     visibility: store.visibility || {},
@@ -261,8 +245,16 @@ function publicStore() {
   };
 }
 
+function nextOrderId(orders) {
+  const max = orders.reduce((highest, order) => {
+    const match = String(order.id || "").match(/^LARI-(\d+)$/);
+    return match ? Math.max(highest, Number(match[1])) : highest;
+  }, 1000);
+  return `LARI-${max + 1}`;
+}
+
 function normalizeStore(input) {
-  const clean = clone(defaults);
+const clean = clone(defaults);
   clean.settings = {
     ...Object.fromEntries(Object.entries(defaults.settings).map(([key, fallback]) => {
       const limit = key.toLowerCase().includes("image") ? 200000 : key.toLowerCase().includes("body") ? 2000 : 180;
@@ -317,7 +309,7 @@ async function handleApi(req, res) {
   if (req.method === "POST" && req.url === "/api/public/orders") {
     const body = await readBody(req);
     const productIds = Array.isArray(body.items) ? body.items.map(String) : [];
-    const store = readStore();
+    const store = database.getStore();
     const products = productIds.map((id) => store.products.find((product) => product.id === id && product.active)).filter(Boolean);
     if (!products.length) return send(res, 400, { error: "No valid products in order" });
     for (const product of products) {
@@ -325,7 +317,7 @@ async function handleApi(req, res) {
     }
     for (const product of products) product.stock = Math.max(0, Number(product.stock) - 1);
     const order = {
-      id: `LARI-${1001 + store.orders.length}`,
+      id: nextOrderId(store.orders),
       customer: String(body.customer || "Online Customer").slice(0, 120),
       email: String(body.email || "").slice(0, 160),
       phone: String(body.phone || "").slice(0, 60),
@@ -338,25 +330,23 @@ async function handleApi(req, res) {
       items: products.map((product) => ({ productId: product.id, name: product.name, price: product.price, quantity: 1 }))
     };
     store.orders.unshift(order);
-    writeStore(store);
+    database.saveStore(store);
     return send(res, 201, { order });
   }
 
   if (req.url === "/api/admin/store") {
     if (!requireAdmin(req, res)) return;
-    if (req.method === "GET") return send(res, 200, readStore());
+    if (req.method === "GET") return send(res, 200, database.getStore());
     if (req.method === "PUT") {
       const body = await readBody(req);
       const clean = normalizeStore(body);
-      writeStore(clean);
-      return send(res, 200, clean);
+      return send(res, 200, database.saveStore(clean));
     }
   }
 
   if (req.method === "POST" && req.url === "/api/admin/reset") {
     if (!requireAdmin(req, res)) return;
-    writeStore(clone(defaults));
-    return send(res, 200, readStore());
+    return send(res, 200, database.resetStore());
   }
 
   return notFound(res);
@@ -385,7 +375,7 @@ const server = http.createServer((req, res) => {
   }
 });
 
-ensureStore();
+const database = createDatabase({ dataDir: DATA_DIR, dbFile: DB_FILE, legacyJsonFile: STORE_FILE, defaults });
 server.listen(PORT, () => {
   console.log(`LARI store running at http://localhost:${PORT}`);
   if (!process.env.LARI_ADMIN_PASSWORD) console.log("Using default admin password: lari-admin-2026");
