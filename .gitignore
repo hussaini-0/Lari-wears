@@ -3,6 +3,7 @@ node_modules/
 CLIENT_PRIVATE_NOTES.md
 data/store.json
 data/*.tmp
+deploy/
 *.log
 .DS_Store
 Thumbs.db

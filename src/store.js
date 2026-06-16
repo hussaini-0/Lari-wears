@@ -15,7 +15,7 @@
   }
 
   const publicState = () => request("/api/public/store");
-  const createOrder = (items, customer) => request("/api/public/orders", { method: "POST", body: { items, customer } });
+  const createOrder = (order) => request("/api/public/orders", { method: "POST", body: order });
   const login = (password) => request("/api/admin/login", { method: "POST", body: { password } });
   const adminState = (token) => request("/api/admin/store", { token });
   const saveAdmin = (token, state) => request("/api/admin/store", { method: "PUT", token, body: state });

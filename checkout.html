@@ -19,7 +19,12 @@
         <label><span data-checkout-copy="checkoutEmailLabel">Email</span><input type="email" required placeholder="customer@email.com" /></label>
         <label><span data-checkout-copy="checkoutPhoneLabel">Phone</span><input required placeholder="+92..." /></label>
         <label><span data-checkout-copy="checkoutAddressLabel">Address</span><input required placeholder="Delivery address" /></label>
-        <label><span data-checkout-copy="checkoutPaymentLabel">Payment method</span><select name="payment"><option>Cash on Delivery</option><option>Online Transfer</option></select></label>
+        <label><span data-checkout-copy="checkoutPaymentLabel">Payment method</span><select name="payment" data-payment-method><option>Cash on Delivery</option><option>Bank Transfer</option><option>Easypaisa</option><option>JazzCash</option></select></label>
+        <section class="manual-payment-box" data-manual-payment hidden>
+          <h2 data-checkout-copy="manualPaymentTitle">Manual payment instructions</h2>
+          <p data-payment-instructions></p>
+          <label><span data-checkout-copy="paymentProofLabel">Payment screenshot / transaction ID</span><input name="paymentProof" placeholder="Transaction ID or screenshot link" /></label>
+        </section>
         <button class="btn btn-yellow full" type="submit" data-checkout-copy="checkoutSubmitButton">PLACE DEMO ORDER</button>
       </form>
     </main>

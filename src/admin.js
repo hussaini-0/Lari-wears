@@ -57,7 +57,8 @@ const pageEditorPages = {
     url: "checkout.html",
     sections: [
       ["Checkout copy", ["checkoutAnnouncement", "checkoutEyebrow", "checkoutTitle", "checkoutIntro"]],
-      ["Checkout form labels", ["checkoutNameLabel", "checkoutEmailLabel", "checkoutPhoneLabel", "checkoutAddressLabel", "checkoutPaymentLabel", "checkoutSubmitButton"]]
+      ["Checkout form labels", ["checkoutNameLabel", "checkoutEmailLabel", "checkoutPhoneLabel", "checkoutAddressLabel", "checkoutPaymentLabel", "checkoutSubmitButton"]],
+      ["Manual payments", ["manualPaymentTitle", "bankTransferInstructions", "easypaisaInstructions", "jazzcashInstructions", "paymentProofLabel"]]
     ]
   },
   about: {
@@ -149,7 +150,7 @@ function showPanel(name) {
 }
 
 function orderTable(orders, editable) {
-  return `<table class="data-table"><thead><tr><th>ORDER</th><th>CUSTOMER</th><th>DATE</th><th>TOTAL</th><th>STATUS</th>${editable ? "<th>ACTION</th>" : ""}</tr></thead><tbody>${orders.map((order) => `<tr><td><b>${order.id}</b></td><td>${order.customer}</td><td>${order.date}</td><td>${money(order.total)}</td><td><span class="pill ${order.status}">${order.status}</span></td>${editable ? `<td><select data-order-status="${order.id}"><option ${order.status === "Processing" ? "selected" : ""}>Processing</option><option ${order.status === "Shipped" ? "selected" : ""}>Shipped</option><option ${order.status === "Delivered" ? "selected" : ""}>Delivered</option><option ${order.status === "Cancelled" ? "selected" : ""}>Cancelled</option></select></td>` : ""}</tr>`).join("")}</tbody></table>`;
+  return `<table class="data-table"><thead><tr><th>ORDER</th><th>CUSTOMER</th><th>PAYMENT</th><th>DATE</th><th>TOTAL</th><th>STATUS</th>${editable ? "<th>ACTION</th>" : ""}</tr></thead><tbody>${orders.map((order) => `<tr><td><b>${order.id}</b></td><td>${order.customer}<br /><small>${order.phone || ""}</small><br /><small>${order.address || ""}</small></td><td>${order.payment || "Cash on Delivery"}${order.paymentProof ? `<br /><small>${order.paymentProof}</small>` : ""}</td><td>${order.date}</td><td>${money(order.total)}</td><td><span class="pill ${order.status}">${order.status}</span></td>${editable ? `<td><select data-order-status="${order.id}"><option ${order.status === "Processing" ? "selected" : ""}>Processing</option><option ${order.status === "Payment Pending" ? "selected" : ""}>Payment Pending</option><option ${order.status === "Paid" ? "selected" : ""}>Paid</option><option ${order.status === "Shipped" ? "selected" : ""}>Shipped</option><option ${order.status === "Delivered" ? "selected" : ""}>Delivered</option><option ${order.status === "Cancelled" ? "selected" : ""}>Cancelled</option></select></td>` : ""}</tr>`).join("")}</tbody></table>`;
 }
 
 function renderOverview() {

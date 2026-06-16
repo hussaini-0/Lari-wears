@@ -124,7 +124,12 @@ const defaults = {
     checkoutPhoneLabel: "Phone",
     checkoutAddressLabel: "Address",
     checkoutPaymentLabel: "Payment method",
-    checkoutSubmitButton: "PLACE DEMO ORDER"
+    checkoutSubmitButton: "PLACE ORDER",
+    manualPaymentTitle: "Manual payment instructions",
+    bankTransferInstructions: "Bank Transfer: Send payment to Account Title LARI, Account No. 000000000000, Bank Name Your Bank. Share screenshot on WhatsApp after placing order.",
+    easypaisaInstructions: "Easypaisa: Send payment to 03XX-XXXXXXX under Account Title LARI. Share transaction ID after placing order.",
+    jazzcashInstructions: "JazzCash: Send payment to 03XX-XXXXXXX under Account Title LARI. Share transaction ID after placing order.",
+    paymentProofLabel: "Payment screenshot / transaction ID"
   },
   visibility: {},
   products: [
@@ -280,8 +285,13 @@ function normalizeStore(input) {
   clean.orders = Array.isArray(input.orders) ? input.orders.map((order) => ({
     id: String(order.id || `LARI-${Date.now()}`).slice(0, 40),
     customer: String(order.customer || "Online Customer").slice(0, 120),
+    email: String(order.email || "").slice(0, 160),
+    phone: String(order.phone || "").slice(0, 60),
+    address: String(order.address || "").slice(0, 300),
+    payment: String(order.payment || "Cash on Delivery").slice(0, 80),
+    paymentProof: String(order.paymentProof || "").slice(0, 300),
     total: Math.max(0, Number(order.total || 0)),
-    status: ["Processing", "Shipped", "Delivered", "Cancelled"].includes(order.status) ? order.status : "Processing",
+    status: ["Processing", "Payment Pending", "Paid", "Shipped", "Delivered", "Cancelled"].includes(order.status) ? order.status : "Processing",
     date: String(order.date || new Date().toISOString().slice(0, 10)).slice(0, 20),
     items: Array.isArray(order.items) ? order.items : []
   })) : clean.orders;
@@ -317,8 +327,13 @@ async function handleApi(req, res) {
     const order = {
       id: `LARI-${1001 + store.orders.length}`,
       customer: String(body.customer || "Online Customer").slice(0, 120),
+      email: String(body.email || "").slice(0, 160),
+      phone: String(body.phone || "").slice(0, 60),
+      address: String(body.address || "").slice(0, 300),
+      payment: String(body.payment || "Cash on Delivery").slice(0, 80),
+      paymentProof: String(body.paymentProof || "").slice(0, 300),
       total: products.reduce((sum, product) => sum + Number(product.price), 0),
-      status: "Processing",
+      status: ["Bank Transfer", "Easypaisa", "JazzCash"].includes(String(body.payment || "")) ? "Payment Pending" : "Processing",
       date: new Date().toISOString().slice(0, 10),
       items: products.map((product) => ({ productId: product.id, name: product.name, price: product.price, quantity: 1 }))
     };

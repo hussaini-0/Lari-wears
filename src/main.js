@@ -158,7 +158,7 @@ document.querySelector(".newsletter form").addEventListener("submit", (event) =>
 document.querySelector("[data-checkout]").addEventListener("click", async () => {
   if (!items.length) return;
   try {
-    await LariStore.createOrder(items.map((item) => item.id), "Online Customer");
+    await LariStore.createOrder({ items: items.map((item) => item.id), customer: "Online Customer", payment: "Cash on Delivery" });
     items = [];
     renderCart();
     closeAll();
