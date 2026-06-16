@@ -67,7 +67,7 @@ npm run start:prod
 - Sanitized public rendering for catalog/cart/content data
 - Turso/libSQL database storage with automatic migration from legacy `data/store.json`
 
-See `DELIVERY.md` for the demo flow and presentation checklist.
+See `DELIVERY.md` for the delivery flow and presentation checklist.
 
 ## Remaining Production Requirements
 

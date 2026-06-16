@@ -41,16 +41,16 @@ Expected result:
 - Admin login works
 - Protected admin API works
 - Order creation works
-- Demo data resets after the smoke test
+-- Smoke-test data resets after the smoke test
 
-## 3. Demo Flow
+## 3. Delivery Flow
 
 1. Open the storefront and show the LARI branded homepage.
 2. Open the collection page and filter/search products.
 3. Open a product detail page.
 4. Add a product to the bag.
 5. Open the cart and checkout page.
-6. Place a demo order.
+6. Place a live test order.
 7. Open the admin dashboard.
 8. Login with the admin password.
 9. Show overview metrics and recent orders.
@@ -87,7 +87,7 @@ There is also a sample file in `sample-products.csv`.
 
 This is a full-stack e-commerce starter with a branded storefront, admin dashboard,
 server API, protected admin login, server-side persistence, order creation, and stock
-updates. It is ready for project delivery and demo.
+updates. It is ready for project delivery and production handoff.
 
 For a real public business launch, the next integrations are payment gateway, shipping
 rules, transactional email, hosted database, cloud image storage, backups, monitoring,

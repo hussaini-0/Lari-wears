@@ -458,10 +458,10 @@ document.addEventListener("change", async (event) => {
 });
 
 document.querySelector("[data-reset]").addEventListener("click", async () => {
-  if (!confirm("Reset all dashboard content to the original demo data?")) return;
+  if (!confirm("Reset all store content to the current default live state?")) return;
   state = await LariStore.reset(token);
   renderAll();
-  toast("Demo data reset");
+  toast("Store data reset");
 });
 
 loadState();

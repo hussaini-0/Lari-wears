@@ -136,23 +136,9 @@ const defaults = {
     paymentProofLabel: "Payment screenshot / transaction ID"
   },
   visibility: {},
-  products: [
-    { id: "blush-eastern-cord-set", name: "Blush Eastern Cord Set", category: "Cord Set - Eastern", price: 5490, stock: 16, badge: "NEW", image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=82", active: true },
-    { id: "black-western-cord-set", name: "Black Western Cord Set", category: "Cord Set - Western", price: 4990, stock: 11, badge: "-20%", image: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=800&q=82", active: true },
-    { id: "printed-lawn-shirt", name: "Printed Lawn Shirt", category: "Shirts", price: 2990, stock: 18, badge: "NEW", image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=82", active: true }
-  ],
-  gallery: [
-    "https://images.unsplash.com/photo-1506629905607-d405b7a30db9?auto=format&fit=crop&w=520&q=80",
-    "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=520&q=80",
-    "https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?auto=format&fit=crop&w=520&q=80",
-    "https://images.unsplash.com/photo-1542295663-7ad9f8e958bb?auto=format&fit=crop&w=520&q=80",
-    "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=520&q=80"
-  ],
-  orders: [
-    { id: "LARI-1004", customer: "Ayesha Khan", total: 5490, status: "Processing", date: "2026-06-01", items: [{ productId: "blush-eastern-cord-set", name: "Blush Eastern Cord Set", price: 5490, quantity: 1 }] },
-    { id: "LARI-1003", customer: "Sara Ahmed", total: 2990, status: "Delivered", date: "2026-05-31", items: [{ productId: "printed-lawn-shirt", name: "Printed Lawn Shirt", price: 2990, quantity: 1 }] },
-    { id: "LARI-1002", customer: "Hania Ali", total: 10480, status: "Shipped", date: "2026-05-30", items: [{ productId: "black-western-cord-set", name: "Black Western Cord Set", price: 4990, quantity: 1 }, { productId: "blush-eastern-cord-set", name: "Blush Eastern Cord Set", price: 5490, quantity: 1 }] }
-  ]
+  products: [],
+  gallery: [],
+  orders: []
 };
 
 function cleanImageSource(value, fallback = "") {

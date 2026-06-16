@@ -78,6 +78,23 @@ async function run() {
       method: "POST",
       headers: auth
     }), 200);
+    const emptyAdminStore = await expectStatus("admin store after reset", await request("/api/admin/store", { headers: auth }), 200);
+    const emptyState = await emptyAdminStore.json();
+    emptyState.products.unshift({
+      id: "smoke-test-product",
+      name: "Smoke Test Product",
+      category: "Shirts",
+      price: 2990,
+      stock: 5,
+      badge: "",
+      image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=82",
+      active: true
+    });
+    await expectStatus("seed smoke product", await request("/api/admin/store", {
+      method: "PUT",
+      headers: auth,
+      body: emptyState
+    }), 200);
     const seededStore = await expectStatus("public store after reset", await request("/api/public/store"), 200);
     const seededProducts = (await seededStore.json()).products;
     if (!seededProducts.length) throw new Error("No public products available for order test");
