@@ -19,6 +19,10 @@ const setImage = (selector, src) => {
   const image = document.querySelector(selector);
   if (image) image.src = src;
 };
+const setSectionState = (selector, hidden) => {
+  const element = document.querySelector(selector);
+  if (element) element.hidden = hidden;
+};
 const applyVisibility = (visibility, pairs) => {
   pairs.forEach(([key, selector]) => {
     document.querySelectorAll(selector).forEach((element) => {
@@ -62,6 +66,7 @@ function renderStorefront(state) {
   const settings = state.settings;
   const visibility = state.visibility || {};
   catalog = state.products;
+  const publishedGallery = state.gallery.filter((image) => typeof image === "string" && image.trim());
   document.querySelectorAll(".announcement p").forEach((item, index) => {
     item.textContent = [settings.announcement, settings.announcementTwo, settings.announcementThree][index] || item.textContent;
   });
@@ -134,7 +139,8 @@ function renderStorefront(state) {
       </div>
       <div class="product-info"><h3><a href="product.html?id=${encodeURIComponent(product.id)}">${esc(product.name)}</a></h3><p>${homeMoney(product.price)}</p><div class="swatches"><i></i><i></i><i></i></div></div>
     </article>`).join("") || "<p>No products are published yet.</p>";
-  document.querySelector(".insta-grid").innerHTML = state.gallery.map((image) => `<img src="${attr(image)}" alt="LARI community style" />`).join("");
+  document.querySelector(".insta-grid").innerHTML = publishedGallery.map((image) => `<img src="${attr(image)}" alt="LARI community style" />`).join("");
+  setSectionState(".insta", !publishedGallery.length || visibility?.instagramTitle === false);
   bindProducts();
 }
 
