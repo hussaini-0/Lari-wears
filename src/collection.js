@@ -68,8 +68,21 @@ function renderCollectionContent(settings, visibility = {}) {
 
   document.querySelectorAll("[data-chip]").forEach((chip) => {
     const [label, image] = chips[chip.dataset.chip] || [];
+    const imageNode = chip.querySelector("img");
     if (label) chip.querySelector("span").textContent = label;
-    if (image) chip.querySelector("img").src = image;
+    if (image && /^https?:|^data:|^\//.test(String(image))) {
+      imageNode.src = image;
+      imageNode.hidden = false;
+      chip.classList.remove("empty");
+    }
+    imageNode.onerror = () => {
+      imageNode.hidden = true;
+      chip.classList.add("empty");
+    };
+    imageNode.onload = () => {
+      imageNode.hidden = false;
+      chip.classList.remove("empty");
+    };
   });
   applyCollectionVisibility(visibility);
 }
