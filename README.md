@@ -30,7 +30,7 @@ Open:
 - Checkout: `http://localhost:4173/checkout.html`
 - About: `http://localhost:4173/about.html`
 - Contact: `http://localhost:4173/contact.html`
-- Admin dashboard: `http://localhost:4173/admin.html`
+- Admin dashboard: `http://localhost:4173/lari-admin-portal.html`
 - Health check: `http://localhost:4173/api/health`
 - Default local admin password: `lari-admin-2026`
 

@@ -17,7 +17,7 @@ Open:
 - Checkout: `http://localhost:4173/checkout.html`
 - About: `http://localhost:4173/about.html`
 - Contact: `http://localhost:4173/contact.html`
-- Admin dashboard: `http://localhost:4173/admin.html`
+- Admin dashboard: `http://localhost:4173/lari-admin-portal.html`
 
 Admin password:
 
@@ -98,7 +98,7 @@ and deployment hardening.
 - `server.js`: Node server, API routes, auth, persistence
 - `data/store.json`: saved catalog, content, gallery, orders
 - `index.html`: storefront
-- `admin.html`: admin dashboard
+- `lari-admin-portal.html`: admin dashboard
 - `src/main.js`: storefront behavior
 - `src/admin.js`: admin dashboard behavior
 - `src/store.js`: API client

@@ -63,7 +63,7 @@ async function run() {
     await expectStatus("checkout page", await fetch(`${BASE_URL}/checkout.html`), 200);
     await expectStatus("about page", await fetch(`${BASE_URL}/about.html`), 200);
     await expectStatus("contact page", await fetch(`${BASE_URL}/contact.html`), 200);
-    await expectStatus("admin page", await fetch(`${BASE_URL}/admin.html`), 200);
+    await expectStatus("admin page", await fetch(`${BASE_URL}/lari-admin-portal.html`), 200);
     await expectStatus("public store", await request("/api/public/store"), 200);
 
     const login = await expectStatus("admin login", await request("/api/admin/login", {
