@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LARI | Shopping Bag</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <div class="announcement"><p data-cart-copy="cartAnnouncement">FREE SHIPPING ON ORDERS ABOVE RS. 4,999</p></div>
+    <header class="site-header">
+      <div class="header-main shell"><a class="logo" href="index.html"><span class="logo-text">LARI</span><span class="logo-dot">wears</span></a><nav class="mini-actions"><a href="collection.html" data-cart-copy="cartContinueLabel">Continue Shopping</a><a href="admin.html" data-cart-copy="cartAdminLabel">Admin</a></nav></div>
+      <nav class="desktop-nav shell"><a data-nav href="index.html">HOME</a><a data-nav href="collection.html">SHOP</a><a data-nav href="about.html">ABOUT</a><a data-nav href="contact.html">CONTACT</a></nav>
+    </header>
+    <main class="page-main shell">
+      <section class="page-hero compact"><span class="eyebrow pink" data-cart-copy="cartEyebrow">YOUR BAG</span><h1 data-cart-copy="cartTitle">Shopping Bag</h1></section>
+      <section class="cart-page-grid"><div data-cart-page></div><aside class="cart-summary"><h2 data-cart-copy="cartSummaryTitle">Order Summary</h2><p><span data-cart-copy="cartSubtotalLabel">Subtotal</span> <b data-cart-subtotal>Rs. 0</b></p><a class="btn btn-yellow full" href="checkout.html" data-cart-copy="cartCheckoutButton">CHECKOUT</a></aside></section>
+    </main>
+    <script src="src/store.js"></script>
+    <script src="src/site.js"></script>
+    <script src="src/cart.js"></script>
+  </body>
+</html>

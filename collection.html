@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LARI | Cord Sets & Shirts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body class="listing-page">
+    <header class="lari-listing-header">
+      <a class="lari-listing-logo" href="index.html" aria-label="LARI home"><span class="logo-text">LARI</span><span class="logo-dot">wears</span></a>
+      <nav class="lari-listing-nav" aria-label="Eastern wear navigation">
+        <a href="index.html" data-collection-nav="navHome">HOME</a>
+        <a href="collection.html" data-collection-nav="navNewIn">NEW IN</a>
+        <a href="collection.html" data-collection-nav="navCordSets">CORD SETS</a>
+        <a href="collection.html" data-collection-nav="navEastern">EASTERN</a>
+        <a href="collection.html" data-collection-nav="navWestern">WESTERN</a>
+        <a href="collection.html" data-collection-nav="navShirts">SHIRTS</a>
+        <a href="collection.html" class="sale-link" data-collection-nav="navSale">SALE</a>
+        <a href="about.html" data-collection-nav="navAbout">ABOUT</a>
+      </nav>
+      <nav class="lari-listing-actions" aria-label="Quick links">
+        <a href="collection.html" aria-label="Search" data-collection-nav="actionSearch">Search</a>
+        <a href="#" aria-label="Wishlist" data-collection-nav="actionWishlist">Wishlist</a>
+        <a href="admin.html" aria-label="Account" data-collection-nav="actionAccount">Account</a>
+        <a href="cart.html" aria-label="Bag"><span data-collection-nav="actionBag">Bag</span> <em data-cart-count>0</em></a>
+      </nav>
+    </header>
+
+    <main class="listing-shell">
+      <nav class="breadcrumb"><a href="index.html">Home</a><span>/</span><b data-collection-title>Cord Sets & Shirts</b></nav>
+
+      <section class="story-circles" aria-label="Featured eastern edits">
+        <button data-chip-category="" data-chip="all"><img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=240&q=80" alt="" /><span>All</span></button>
+        <button data-chip-category="Cord Set - Eastern" data-chip="eastern"><img src="https://images.unsplash.com/photo-1506629905607-d405b7a30db9?auto=format&fit=crop&w=240&q=80" alt="" /><span>Eastern Cord Set</span></button>
+        <button data-chip-category="Cord Set - Western" data-chip="western"><img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=240&q=80" alt="" /><span>Western Cord Set</span></button>
+        <button data-chip-category="Shirts" data-chip="shirts"><img src="https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?auto=format&fit=crop&w=240&q=80" alt="" /><span>Shirts</span></button>
+        <button data-chip-category="Sale" data-chip="sale"><img src="https://images.unsplash.com/photo-1542295663-7ad9f8e958bb?auto=format&fit=crop&w=240&q=80" alt="" /><span>Sale Edit</span></button>
+      </section>
+
+      <section class="listing-controls">
+        <div class="listing-selects">
+          <select data-filter-category>
+            <option value="">Filter by</option>
+            <option>Cord Set - Eastern</option>
+            <option>Cord Set - Western</option>
+            <option>Shirts</option>
+            <option>Sale</option>
+          </select>
+          <select data-sort-products>
+            <option value="recommended">Recommended</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="new">Newest</option>
+          </select>
+          <input type="search" placeholder="Search eastern articles..." data-search-products />
+        </div>
+        <p class="listing-count"><b data-item-count>0</b><br />items</p>
+        <div class="grid-icons" role="group" aria-label="Products per row">
+          <button type="button" data-grid-cols="2" aria-label="Show 2 products per row"><span aria-hidden="true"><i></i><i></i></span></button>
+          <button type="button" data-grid-cols="3" aria-label="Show 3 products per row"><span aria-hidden="true"><i></i><i></i><i></i></span></button>
+          <button type="button" data-grid-cols="4" aria-label="Show 4 products per row"><span aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+          <button type="button" data-grid-cols="5" aria-label="Show 5 products per row"><span aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></button>
+        </div>
+      </section>
+
+      <section class="product-grid collection-grid lari-product-grid" data-collection-grid></section>
+    </main>
+
+    <script src="src/store.js"></script>
+    <script src="src/site.js"></script>
+    <script src="src/collection.js"></script>
+  </body>
+</html>

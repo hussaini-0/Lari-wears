@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LARI Admin | Store Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="src/admin.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="index.html"><b>LARI</b><span>wears</span></a>
+      <p class="side-label">STORE MANAGER</p>
+      <nav>
+        <button class="nav-btn active" data-view="overview"><i>01</i> Overview</button>
+        <button class="nav-btn" data-view="products"><i>02</i> Products</button>
+        <button class="nav-btn" data-view="media"><i>03</i> Media Library</button>
+        <button class="nav-btn" data-view="editor"><i>04</i> Edit Pages</button>
+        <button class="nav-btn" data-view="homepage"><i>05</i> Content</button>
+        <button class="nav-btn" data-view="orders"><i>06</i> Orders</button>
+      </nav>
+      <div class="side-bottom">
+        <a href="index.html" target="_blank">View live store <b>+</b></a>
+        <button data-reset>Reset demo data</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="topbar">
+        <div>
+          <button class="mobile-menu" data-toggle-menu>MENU</button>
+          <p class="kicker">TUESDAY, JUNE 2</p>
+          <h1 data-page-title>Store overview</h1>
+        </div>
+        <div class="admin-profile"><span>LR</span><div><b>LARI Admin</b><small>Store owner</small></div></div>
+      </header>
+
+      <section class="admin-view active" data-panel="overview">
+        <div class="stats" data-stats></div>
+        <div class="overview-grid">
+          <section class="panel revenue">
+            <div class="panel-head"><div><p class="kicker">PERFORMANCE</p><h2>Sales overview</h2></div><b>LAST 7 DAYS</b></div>
+            <div class="chart-bars"><i style="height:42%"></i><i style="height:58%"></i><i style="height:50%"></i><i style="height:77%"></i><i style="height:62%"></i><i style="height:93%"></i><i style="height:72%"></i></div>
+            <div class="chart-labels"><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span><span>M</span><span>T</span></div>
+          </section>
+          <section class="panel quick">
+            <div class="panel-head"><div><p class="kicker">SHORTCUTS</p><h2>Quick actions</h2></div></div>
+            <button data-action="add-product"><b>+</b><span>Add new product<small>Publish a new article</small></span></button>
+            <button data-action="bulk-import"><b>CSV</b><span>Bulk import<small>Add many articles at once</small></span></button>
+            <button data-go="homepage"><b>*</b><span>Update content<small>Edit text and pictures</small></span></button>
+            <button data-go="media"><b>#</b><span>Manage pictures<small>Add or remove images</small></span></button>
+          </section>
+        </div>
+        <section class="panel table-panel">
+          <div class="panel-head"><div><p class="kicker">LATEST ACTIVITY</p><h2>Recent orders</h2></div><button class="link-btn" data-go="orders">VIEW ALL</button></div>
+          <div data-recent-orders></div>
+        </section>
+      </section>
+
+      <section class="admin-view" data-panel="products">
+        <div class="toolbar">
+          <input type="search" placeholder="Search articles..." data-product-search />
+          <div class="toolbar-actions">
+            <button class="secondary" data-action="download-template">DOWNLOAD CSV TEMPLATE</button>
+            <button class="secondary" data-action="bulk-import">BULK IMPORT</button>
+            <button class="primary" data-action="add-product">+ ADD PRODUCT</button>
+          </div>
+        </div>
+        <section class="panel table-panel">
+          <div class="panel-head"><div><p class="kicker">CATALOG</p><h2>All articles</h2></div><b data-product-total></b></div>
+          <div data-product-table></div>
+        </section>
+      </section>
+
+      <section class="admin-view" data-panel="media">
+        <div class="toolbar">
+          <p>Add image URLs or upload pictures for the community gallery.</p>
+          <button class="primary" data-action="add-media">+ ADD PICTURE</button>
+        </div>
+        <div class="media-grid" data-media-grid></div>
+      </section>
+
+      <section class="admin-view" data-panel="editor">
+        <section class="panel page-editor-panel">
+          <div class="panel-head">
+            <div><p class="kicker">VISUAL EDITOR</p><h2>Edit page content</h2></div>
+            <a class="link-btn" href="index.html" target="_blank" data-editor-preview-link>OPEN PAGE</a>
+          </div>
+          <div class="editor-toolbar">
+            <label>Select page<select data-page-editor-select></select></label>
+            <p>Click any outlined text or image block to edit it. Product lists are managed from Products.</p>
+          </div>
+          <div class="visual-editor" data-page-editor></div>
+        </section>
+      </section>
+
+      <section class="admin-view" data-panel="homepage">
+        <section class="panel form-panel">
+          <div class="panel-head"><div><p class="kicker">CONTENT MANAGEMENT</p><h2>Editable site content</h2></div><a class="link-btn" href="index.html" target="_blank">PREVIEW STORE</a></div>
+          <form data-home-form>
+            <h3 class="content-group">Homepage hero</h3>
+            <label>Announcement bar<input name="announcement" required /></label>
+            <div class="form-row"><label>Announcement 2<input name="announcementTwo" required /></label><label>Announcement 3<input name="announcementThree" required /></label></div>
+            <label>Hero eyebrow<input name="heroEyebrow" required /></label>
+            <label>Hero heading<input name="heroTitle" required /></label>
+            <label>Hero subtitle<input name="heroSubtitle" required /></label>
+            <label>Hero image URL<input name="heroImage" type="url" required /></label>
+            <label>Hero sticker<input name="heroSticker" required /></label>
+            <img class="hero-preview" data-hero-preview alt="Homepage hero preview" />
+            <h3 class="content-group">Homepage sections</h3>
+            <div class="form-row"><label>Mood eyebrow<input name="moodEyebrow" required /></label><label>Mood title<input name="moodTitle" required /></label></div>
+            <div class="form-row"><label>Department 1 title<input name="departmentOneTitle" required /></label><label>Department 1 image URL<input name="departmentOneImage" type="url" required /></label></div>
+            <div class="form-row"><label>Department 2 title<input name="departmentTwoTitle" required /></label><label>Department 2 image URL<input name="departmentTwoImage" type="url" required /></label></div>
+            <div class="form-row"><label>Department 3 title<input name="departmentThreeTitle" required /></label><label>Department 3 image URL<input name="departmentThreeImage" type="url" required /></label></div>
+            <div class="form-row"><label>Ticker text 1<input name="tickerOne" required /></label><label>Ticker text 2<input name="tickerTwo" required /></label></div>
+            <label>Ticker text 3<input name="tickerThree" required /></label>
+            <div class="form-row"><label>Trending eyebrow<input name="trendingEyebrow" required /></label><label>Trending title<input name="trendingTitle" required /></label></div>
+            <div class="form-row"><label>Story eyebrow<input name="storyEyebrow" required /></label><label>Story title<input name="storyTitle" required /></label></div>
+            <label>Story subtitle<input name="storySubtitle" required /></label>
+            <div class="form-row"><label>Story button<input name="storyButton" required /></label><label>Story image URL<input name="storyImage" type="url" required /></label></div>
+            <div class="form-row"><label>Edit eyebrow<input name="editEyebrow" required /></label><label>Edit title<input name="editTitle" required /></label></div>
+            <label>Edit subtitle<input name="editSubtitle" required /></label>
+            <div class="form-row"><label>Edit card 1 title<input name="editOneTitle" required /></label><label>Edit card 1 image URL<input name="editOneImage" type="url" required /></label></div>
+            <div class="form-row"><label>Edit card 2 title<input name="editTwoTitle" required /></label><label>Edit card 2 image URL<input name="editTwoImage" type="url" required /></label></div>
+            <div class="form-row"><label>Edit card 3 title<input name="editThreeTitle" required /></label><label>Edit card 3 image URL<input name="editThreeImage" type="url" required /></label></div>
+            <div class="form-row"><label>Instagram eyebrow<input name="instagramEyebrow" required /></label><label>Instagram title<input name="instagramTitle" required /></label></div>
+            <h3 class="content-group">Benefits and footer</h3>
+            <div class="form-row"><label>Benefit 1 title<input name="benefitOneTitle" required /></label><label>Benefit 1 text<input name="benefitOneText" required /></label></div>
+            <div class="form-row"><label>Benefit 2 title<input name="benefitTwoTitle" required /></label><label>Benefit 2 text<input name="benefitTwoText" required /></label></div>
+            <div class="form-row"><label>Benefit 3 title<input name="benefitThreeTitle" required /></label><label>Benefit 3 text<input name="benefitThreeText" required /></label></div>
+            <div class="form-row"><label>Benefit 4 title<input name="benefitFourTitle" required /></label><label>Benefit 4 text<input name="benefitFourText" required /></label></div>
+            <label>Footer text<input name="footerText" required /></label>
+            <div class="form-row"><label>Newsletter title<input name="newsletterTitle" required /></label><label>Newsletter text<input name="newsletterText" required /></label></div>
+            <h3 class="content-group">About page</h3>
+            <label>About announcement<input name="aboutAnnouncement" required /></label>
+            <div class="form-row"><label>About eyebrow<input name="aboutEyebrow" required /></label><label>About heading<input name="aboutTitle" required /></label></div>
+            <label>About body<textarea name="aboutBody" rows="7" required></textarea></label>
+            <label>About closing<input name="aboutClosing" required /></label>
+            <h3 class="content-group">Contact page</h3>
+            <label>Contact announcement<input name="contactAnnouncement" required /></label>
+            <div class="form-row"><label>Contact eyebrow<input name="contactEyebrow" required /></label><label>Contact heading<input name="contactTitle" required /></label></div>
+            <label>Contact body<textarea name="contactBody" rows="4" required></textarea></label>
+            <div class="form-row"><label>Shipment text<input name="shipmentText" required /></label><label>Returns text<input name="returnsText" required /></label></div>
+            <div class="form-row"><label>Payments text<input name="paymentsText" required /></label><label>Delivery text<input name="deliveryText" required /></label></div>
+            <h3 class="content-group">Collection page</h3>
+            <label>Collection page title<input name="collectionTitle" required /></label>
+            <label>Nav: Home<input name="navHome" required /></label>
+            <div class="form-row"><label>Nav: New In<input name="navNewIn" required /></label><label>Nav: Cord Sets<input name="navCordSets" required /></label></div>
+            <div class="form-row"><label>Nav: Eastern<input name="navEastern" required /></label><label>Nav: Western<input name="navWestern" required /></label></div>
+            <div class="form-row"><label>Nav: Shirts<input name="navShirts" required /></label><label>Nav: Sale<input name="navSale" required /></label></div>
+            <label>Nav: About<input name="navAbout" required /></label>
+            <div class="form-row"><label>Action: Search<input name="actionSearch" required /></label><label>Action: Wishlist<input name="actionWishlist" required /></label></div>
+            <div class="form-row"><label>Action: Account<input name="actionAccount" required /></label><label>Action: Bag<input name="actionBag" required /></label></div>
+            <div class="form-row"><label>Circle 1 label<input name="chipAllLabel" required /></label><label>Circle 1 image URL<input name="chipAllImage" type="url" required /></label></div>
+            <div class="form-row"><label>Circle 2 label<input name="chipEasternLabel" required /></label><label>Circle 2 image URL<input name="chipEasternImage" type="url" required /></label></div>
+            <div class="form-row"><label>Circle 3 label<input name="chipWesternLabel" required /></label><label>Circle 3 image URL<input name="chipWesternImage" type="url" required /></label></div>
+            <div class="form-row"><label>Circle 4 label<input name="chipShirtsLabel" required /></label><label>Circle 4 image URL<input name="chipShirtsImage" type="url" required /></label></div>
+            <div class="form-row"><label>Circle 5 label<input name="chipSaleLabel" required /></label><label>Circle 5 image URL<input name="chipSaleImage" type="url" required /></label></div>
+            <div class="save-strip"><button class="primary" type="submit">SAVE CONTENT</button></div>
+          </form>
+        </section>
+      </section>
+
+      <section class="admin-view" data-panel="orders">
+        <section class="panel table-panel">
+          <div class="panel-head"><div><p class="kicker">FULFILMENT</p><h2>Customer orders</h2></div><b data-order-total></b></div>
+          <div data-order-table></div>
+        </section>
+      </section>
+    </main>
+
+    <dialog data-product-dialog>
+      <button class="dialog-close" data-close-dialog aria-label="Close">x</button>
+      <p class="kicker">CATALOG EDITOR</p>
+      <h2 data-dialog-title>Add product</h2>
+      <form data-product-form>
+        <input type="hidden" name="id" />
+        <label>Product name<input name="name" required /></label>
+        <div class="form-row"><label>Category<select name="category"><option>Cord Set - Eastern</option><option>Cord Set - Western</option><option>Shirts</option><option>Sale</option></select></label><label>Badge<input name="badge" placeholder="NEW or -20%" /></label></div>
+        <div class="form-row"><label>Price (PKR)<input name="price" type="number" min="0" required /></label><label>Stock units<input name="stock" type="number" min="0" required /></label></div>
+        <label>Product image URL<input name="image" type="url" required /></label>
+        <label class="check"><input name="active" type="checkbox" checked /> Published on storefront</label>
+        <button class="primary" type="submit">SAVE PRODUCT</button>
+      </form>
+    </dialog>
+
+    <dialog data-media-dialog>
+      <button class="dialog-close" data-close-dialog aria-label="Close">x</button>
+      <p class="kicker">MEDIA LIBRARY</p>
+      <h2>Add picture</h2>
+      <form data-media-form>
+        <label>Image URL<input name="url" type="url" placeholder="https://..." /></label>
+        <p class="or">OR</p>
+        <label>Upload from device<input name="file" type="file" accept="image/*" /></label>
+        <small>Uploads are stored in this browser for this local prototype. Use cloud object storage for deployment.</small>
+        <button class="primary" type="submit">ADD PICTURE</button>
+      </form>
+    </dialog>
+
+    <dialog data-import-dialog class="wide-dialog">
+      <button class="dialog-close" data-close-dialog aria-label="Close">x</button>
+      <p class="kicker">BULK PRODUCT IMPORT</p>
+      <h2>Add many articles from CSV</h2>
+      <div class="import-help">
+        <p>Prepare products in Excel or Google Sheets, export as CSV, then upload or paste here.</p>
+        <p><b>Columns:</b> name, category, price, stock, badge, image, active</p>
+      </div>
+      <form data-import-form>
+        <label>Upload CSV file<input name="file" type="file" accept=".csv,text/csv" /></label>
+        <p class="or">OR</p>
+        <label>Paste CSV content<textarea name="csv" rows="9" placeholder="name,category,price,stock,badge,image,active"></textarea></label>
+        <div class="import-actions">
+          <button class="secondary" type="button" data-action="download-template">DOWNLOAD TEMPLATE</button>
+          <button class="primary" type="submit">IMPORT ARTICLES</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" data-toast></div>
+    <script src="src/store.js"></script>
+    <script src="src/admin.js"></script>
+  </body>
+</html>

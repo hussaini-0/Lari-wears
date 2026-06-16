@@ -1,0 +1,15 @@
+{
+  "name": "lari-clothing",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:prod": "node server.js",
+    "test": "node --check server.js && node --check src/store.js && node --check src/site.js && node --check src/main.js && node --check src/admin.js && node --check src/collection.js && node --check src/product.js && node --check src/cart.js && node --check src/checkout.js && node --check scripts/smoke-test.js",
+    "smoke": "node scripts/smoke-test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

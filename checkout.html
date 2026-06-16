@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LARI | Checkout</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <div class="announcement"><p data-checkout-copy="checkoutAnnouncement">COD AND ONLINE TRANSFER AVAILABLE</p></div>
+    <header class="site-header"><div class="header-main shell"><a class="logo" href="index.html"><span class="logo-text">LARI</span><span class="logo-dot">wears</span></a><nav class="mini-actions"><a href="cart.html">Bag <em data-cart-count>0</em></a></nav></div></header>
+    <main class="page-main shell">
+      <section class="page-hero compact"><span class="eyebrow pink" data-checkout-copy="checkoutEyebrow">CHECKOUT</span><h1 data-checkout-copy="checkoutTitle">Place Order</h1><p data-checkout-copy="checkoutIntro">Shipment takes 7-14 working days. Delivery is available across Pakistan and internationally.</p></section>
+      <form class="checkout-form" data-checkout-form>
+        <label><span data-checkout-copy="checkoutNameLabel">Full name</span><input name="customer" required placeholder="Customer name" /></label>
+        <label><span data-checkout-copy="checkoutEmailLabel">Email</span><input type="email" required placeholder="customer@email.com" /></label>
+        <label><span data-checkout-copy="checkoutPhoneLabel">Phone</span><input required placeholder="+92..." /></label>
+        <label><span data-checkout-copy="checkoutAddressLabel">Address</span><input required placeholder="Delivery address" /></label>
+        <label><span data-checkout-copy="checkoutPaymentLabel">Payment method</span><select name="payment"><option>Cash on Delivery</option><option>Online Transfer</option></select></label>
+        <button class="btn btn-yellow full" type="submit" data-checkout-copy="checkoutSubmitButton">PLACE DEMO ORDER</button>
+      </form>
+    </main>
+    <script src="src/store.js"></script>
+    <script src="src/site.js"></script>
+    <script src="src/checkout.js"></script>
+  </body>
+</html>
