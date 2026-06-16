@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const Database = require("better-sqlite3");
+const { createClient } = require("@libsql/client");
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -19,25 +19,32 @@ function mergeLegacyStore(defaults, legacy) {
   };
 }
 
-function createDatabase({ dataDir, dbFile, legacyJsonFile, defaults }) {
-  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-  const db = new Database(dbFile);
-  db.pragma("journal_mode = WAL");
+function rowMap(rows, keyName, valueName) {
+  return Object.fromEntries(rows.map((row) => [row[keyName], row[valueName]]));
+}
 
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS metadata (
+async function createDatabase({ dataDir, legacyJsonFile, defaults, databaseUrl, authToken }) {
+  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+  const localFile = path.join(dataDir, "store-local.db");
+  const client = createClient({
+    url: databaseUrl || `file:${localFile}`,
+    authToken: authToken || undefined
+  });
+
+  await client.batch([
+    `CREATE TABLE IF NOT EXISTS metadata (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS settings (
+    )`,
+    `CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS visibility (
+    )`,
+    `CREATE TABLE IF NOT EXISTS visibility (
       key TEXT PRIMARY KEY,
       is_visible INTEGER NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS products (
+    )`,
+    `CREATE TABLE IF NOT EXISTS products (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       category TEXT NOT NULL,
@@ -46,12 +53,12 @@ function createDatabase({ dataDir, dbFile, legacyJsonFile, defaults }) {
       badge TEXT NOT NULL,
       image TEXT NOT NULL,
       active INTEGER NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS gallery (
+    )`,
+    `CREATE TABLE IF NOT EXISTS gallery (
       position INTEGER PRIMARY KEY,
       image TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS orders (
+    )`,
+    `CREATE TABLE IF NOT EXISTS orders (
       id TEXT PRIMARY KEY,
       customer TEXT NOT NULL,
       email TEXT NOT NULL,
@@ -62,129 +69,140 @@ function createDatabase({ dataDir, dbFile, legacyJsonFile, defaults }) {
       total REAL NOT NULL,
       status TEXT NOT NULL,
       date TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS order_items (
+    )`,
+    `CREATE TABLE IF NOT EXISTS order_items (
       order_id TEXT NOT NULL,
       position INTEGER NOT NULL,
       productId TEXT NOT NULL,
       name TEXT NOT NULL,
       price REAL NOT NULL,
       quantity INTEGER NOT NULL,
-      PRIMARY KEY (order_id, position),
-      FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
-    );
-  `);
+      PRIMARY KEY (order_id, position)
+    )`
+  ], "write");
 
-  const replaceStore = db.transaction((store) => {
-    db.prepare("DELETE FROM settings").run();
-    db.prepare("DELETE FROM visibility").run();
-    db.prepare("DELETE FROM products").run();
-    db.prepare("DELETE FROM gallery").run();
-    db.prepare("DELETE FROM order_items").run();
-    db.prepare("DELETE FROM orders").run();
+  async function replaceStore(store) {
+    await client.batch([
+      "DELETE FROM settings",
+      "DELETE FROM visibility",
+      "DELETE FROM products",
+      "DELETE FROM gallery",
+      "DELETE FROM order_items",
+      "DELETE FROM orders"
+    ], "write");
 
-    const insertSetting = db.prepare("INSERT INTO settings (key, value) VALUES (?, ?)");
-    for (const [key, value] of Object.entries(store.settings || {})) insertSetting.run(key, String(value));
+    for (const [key, value] of Object.entries(store.settings || {})) {
+      await client.execute({ sql: "INSERT INTO settings (key, value) VALUES (?, ?)", args: [key, String(value)] });
+    }
 
-    const insertVisibility = db.prepare("INSERT INTO visibility (key, is_visible) VALUES (?, ?)");
-    for (const [key, value] of Object.entries(store.visibility || {})) insertVisibility.run(key, value === false ? 0 : 1);
+    for (const [key, value] of Object.entries(store.visibility || {})) {
+      await client.execute({ sql: "INSERT INTO visibility (key, is_visible) VALUES (?, ?)", args: [key, value === false ? 0 : 1] });
+    }
 
-    const insertProduct = db.prepare(`
-      INSERT INTO products (id, name, category, price, stock, badge, image, active)
-      VALUES (@id, @name, @category, @price, @stock, @badge, @image, @active)
-    `);
     for (const product of store.products || []) {
-      insertProduct.run({
-        id: String(product.id),
-        name: String(product.name),
-        category: String(product.category),
-        price: Number(product.price),
-        stock: Number(product.stock),
-        badge: String(product.badge || ""),
-        image: String(product.image || ""),
-        active: product.active ? 1 : 0
+      await client.execute({
+        sql: `INSERT INTO products (id, name, category, price, stock, badge, image, active)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        args: [
+          String(product.id),
+          String(product.name),
+          String(product.category),
+          Number(product.price),
+          Number(product.stock),
+          String(product.badge || ""),
+          String(product.image || ""),
+          product.active ? 1 : 0
+        ]
       });
     }
 
-    const insertGallery = db.prepare("INSERT INTO gallery (position, image) VALUES (?, ?)");
-    (store.gallery || []).forEach((image, index) => insertGallery.run(index, String(image)));
+    for (const [index, image] of (store.gallery || []).entries()) {
+      await client.execute({ sql: "INSERT INTO gallery (position, image) VALUES (?, ?)", args: [index, String(image)] });
+    }
 
-    const insertOrder = db.prepare(`
-      INSERT INTO orders (id, customer, email, phone, address, payment, paymentProof, total, status, date)
-      VALUES (@id, @customer, @email, @phone, @address, @payment, @paymentProof, @total, @status, @date)
-    `);
-    const insertOrderItem = db.prepare(`
-      INSERT INTO order_items (order_id, position, productId, name, price, quantity)
-      VALUES (@order_id, @position, @productId, @name, @price, @quantity)
-    `);
     for (const order of store.orders || []) {
-      insertOrder.run({
-        id: String(order.id),
-        customer: String(order.customer || ""),
-        email: String(order.email || ""),
-        phone: String(order.phone || ""),
-        address: String(order.address || ""),
-        payment: String(order.payment || "Cash on Delivery"),
-        paymentProof: String(order.paymentProof || ""),
-        total: Number(order.total || 0),
-        status: String(order.status || "Processing"),
-        date: String(order.date || "")
+      await client.execute({
+        sql: `INSERT INTO orders (id, customer, email, phone, address, payment, paymentProof, total, status, date)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        args: [
+          String(order.id),
+          String(order.customer || ""),
+          String(order.email || ""),
+          String(order.phone || ""),
+          String(order.address || ""),
+          String(order.payment || "Cash on Delivery"),
+          String(order.paymentProof || ""),
+          Number(order.total || 0),
+          String(order.status || "Processing"),
+          String(order.date || "")
+        ]
       });
-      (order.items || []).forEach((item, index) => {
-        insertOrderItem.run({
-          order_id: String(order.id),
-          position: index,
-          productId: String(item.productId || ""),
-          name: String(item.name || ""),
-          price: Number(item.price || 0),
-          quantity: Number(item.quantity || 1)
+      for (const [index, item] of (order.items || []).entries()) {
+        await client.execute({
+          sql: `INSERT INTO order_items (order_id, position, productId, name, price, quantity)
+                VALUES (?, ?, ?, ?, ?, ?)`,
+          args: [
+            String(order.id),
+            index,
+            String(item.productId || ""),
+            String(item.name || ""),
+            Number(item.price || 0),
+            Number(item.quantity || 1)
+          ]
         });
-      });
+      }
     }
 
-    db.prepare(`
-      INSERT INTO metadata (key, value) VALUES ('initialized', '1')
-      ON CONFLICT(key) DO UPDATE SET value = excluded.value
-    `).run();
-  });
+    await client.execute({
+      sql: "INSERT OR REPLACE INTO metadata (key, value) VALUES ('initialized', '1')"
+    });
+  }
 
-  function getStore() {
-    const settings = Object.fromEntries(db.prepare("SELECT key, value FROM settings").all().map((row) => [row.key, row.value]));
-    const visibility = Object.fromEntries(
-      db.prepare("SELECT key, is_visible FROM visibility").all().map((row) => [row.key, row.is_visible === 1])
-    );
-    const products = db.prepare("SELECT id, name, category, price, stock, badge, image, active FROM products ORDER BY rowid ASC").all()
-      .map((row) => ({ ...row, active: row.active === 1 }));
-    const gallery = db.prepare("SELECT image FROM gallery ORDER BY position ASC").all().map((row) => row.image);
-    const orderRows = db.prepare(`
+  async function getStore() {
+    const settingsRows = await client.execute("SELECT key, value FROM settings");
+    const visibilityRows = await client.execute("SELECT key, is_visible FROM visibility");
+    const productRows = await client.execute("SELECT id, name, category, price, stock, badge, image, active FROM products ORDER BY rowid ASC");
+    const galleryRows = await client.execute("SELECT image FROM gallery ORDER BY position ASC");
+    const orderRows = await client.execute(`
       SELECT id, customer, email, phone, address, payment, paymentProof, total, status, date
       FROM orders ORDER BY rowid DESC
-    `).all();
-    const itemRows = db.prepare(`
+    `);
+    const itemRows = await client.execute(`
       SELECT order_id, position, productId, name, price, quantity
       FROM order_items ORDER BY order_id ASC, position ASC
-    `).all();
+    `);
+
     const itemsByOrder = new Map();
-    for (const row of itemRows) {
+    for (const row of itemRows.rows) {
       if (!itemsByOrder.has(row.order_id)) itemsByOrder.set(row.order_id, []);
       itemsByOrder.get(row.order_id).push({
         productId: row.productId,
         name: row.name,
-        price: row.price,
-        quantity: row.quantity
+        price: Number(row.price),
+        quantity: Number(row.quantity)
       });
     }
+
     return {
-      settings,
-      visibility,
-      products,
-      gallery,
-      orders: orderRows.map((order) => ({ ...order, items: itemsByOrder.get(order.id) || [] }))
+      settings: rowMap(settingsRows.rows, "key", "value"),
+      visibility: Object.fromEntries(visibilityRows.rows.map((row) => [row.key, Number(row.is_visible) === 1])),
+      products: productRows.rows.map((row) => ({
+        ...row,
+        price: Number(row.price),
+        stock: Number(row.stock),
+        active: Number(row.active) === 1
+      })),
+      gallery: galleryRows.rows.map((row) => row.image),
+      orders: orderRows.rows.map((row) => ({
+        ...row,
+        total: Number(row.total),
+        items: itemsByOrder.get(row.id) || []
+      }))
     };
   }
 
-  const initialized = db.prepare("SELECT value FROM metadata WHERE key = 'initialized'").get();
-  if (!initialized) {
+  const initialized = await client.execute("SELECT value FROM metadata WHERE key = 'initialized'");
+  if (!initialized.rows.length) {
     let seed = clone(defaults);
     if (fs.existsSync(legacyJsonFile)) {
       try {
@@ -194,21 +212,23 @@ function createDatabase({ dataDir, dbFile, legacyJsonFile, defaults }) {
         seed = clone(defaults);
       }
     }
-    replaceStore(seed);
+    await replaceStore(seed);
   }
 
   return {
-    getStore,
-    saveStore(store) {
-      replaceStore(store);
+    async getStore() {
       return getStore();
     },
-    resetStore() {
-      replaceStore(clone(defaults));
+    async saveStore(store) {
+      await replaceStore(store);
       return getStore();
     },
-    close() {
-      db.close();
+    async resetStore() {
+      await replaceStore(clone(defaults));
+      return getStore();
+    },
+    async close() {
+      await client.close();
     }
   };
 }

@@ -9,10 +9,12 @@ const ADMIN_PASSWORD = process.env.LARI_ADMIN_PASSWORD || "lari-admin-2026";
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, "data");
-const DB_FILE = path.resolve(ROOT, process.env.LARI_DB_FILE || path.join("data", "store.db"));
 const STORE_FILE = path.join(DATA_DIR, "store.json");
+const TURSO_DATABASE_URL = process.env.TURSO_DATABASE_URL || "";
+const TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN || "";
 const sessions = new Map();
 const loginAttempts = new Map();
+let database;
 
 if (IS_PRODUCTION && ADMIN_PASSWORD === "lari-admin-2026") {
   console.error("Refusing to start in production with the default admin password. Set LARI_ADMIN_PASSWORD.");
@@ -235,8 +237,8 @@ function loginAllowed(req) {
   return record.count <= 10;
 }
 
-function publicStore() {
-  const store = database.getStore();
+async function publicStore() {
+  const store = await database.getStore();
   return {
     settings: store.settings,
     visibility: store.visibility || {},
@@ -295,7 +297,7 @@ async function handleApi(req, res) {
     return send(res, 200, { ok: true, service: "lari-store", timestamp: new Date().toISOString() });
   }
 
-  if (req.method === "GET" && req.url === "/api/public/store") return send(res, 200, publicStore());
+  if (req.method === "GET" && req.url === "/api/public/store") return send(res, 200, await publicStore());
 
   if (req.method === "POST" && req.url === "/api/admin/login") {
     if (!loginAllowed(req)) return send(res, 429, { error: "Too many login attempts. Try again later." });
@@ -309,7 +311,7 @@ async function handleApi(req, res) {
   if (req.method === "POST" && req.url === "/api/public/orders") {
     const body = await readBody(req);
     const productIds = Array.isArray(body.items) ? body.items.map(String) : [];
-    const store = database.getStore();
+    const store = await database.getStore();
     const products = productIds.map((id) => store.products.find((product) => product.id === id && product.active)).filter(Boolean);
     if (!products.length) return send(res, 400, { error: "No valid products in order" });
     for (const product of products) {
@@ -330,23 +332,23 @@ async function handleApi(req, res) {
       items: products.map((product) => ({ productId: product.id, name: product.name, price: product.price, quantity: 1 }))
     };
     store.orders.unshift(order);
-    database.saveStore(store);
+    await database.saveStore(store);
     return send(res, 201, { order });
   }
 
   if (req.url === "/api/admin/store") {
     if (!requireAdmin(req, res)) return;
-    if (req.method === "GET") return send(res, 200, database.getStore());
+    if (req.method === "GET") return send(res, 200, await database.getStore());
     if (req.method === "PUT") {
       const body = await readBody(req);
       const clean = normalizeStore(body);
-      return send(res, 200, database.saveStore(clean));
+      return send(res, 200, await database.saveStore(clean));
     }
   }
 
   if (req.method === "POST" && req.url === "/api/admin/reset") {
     if (!requireAdmin(req, res)) return;
-    return send(res, 200, database.resetStore());
+    return send(res, 200, await database.resetStore());
   }
 
   return notFound(res);
@@ -375,8 +377,19 @@ const server = http.createServer((req, res) => {
   }
 });
 
-const database = createDatabase({ dataDir: DATA_DIR, dbFile: DB_FILE, legacyJsonFile: STORE_FILE, defaults });
-server.listen(PORT, () => {
-  console.log(`LARI store running at http://localhost:${PORT}`);
-  if (!process.env.LARI_ADMIN_PASSWORD) console.log("Using default admin password: lari-admin-2026");
+(async () => {
+  database = await createDatabase({
+    dataDir: DATA_DIR,
+    legacyJsonFile: STORE_FILE,
+    defaults,
+    databaseUrl: TURSO_DATABASE_URL,
+    authToken: TURSO_AUTH_TOKEN
+  });
+  server.listen(PORT, () => {
+    console.log(`LARI store running at http://localhost:${PORT}`);
+    if (!process.env.LARI_ADMIN_PASSWORD) console.log("Using default admin password: lari-admin-2026");
+  });
+})().catch((error) => {
+  console.error("Database startup failed:", error.message);
+  process.exit(1);
 });
