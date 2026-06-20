@@ -106,25 +106,25 @@
             <label>Hero eyebrow<input name="heroEyebrow" required /></label>
             <label>Hero heading<input name="heroTitle" required /></label>
             <label>Hero subtitle<input name="heroSubtitle" required /></label>
-            <label>Hero image URL<input name="heroImage" type="url" required /></label>
+            <label class="image-field"><span>Hero image URL</span><div class="image-input-row"><input name="heroImage" type="url" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="heroImage" hidden /></label></div></label>
             <label>Hero sticker<input name="heroSticker" required /></label>
             <img class="hero-preview" data-hero-preview alt="Homepage hero preview" />
             <h3 class="content-group">Homepage sections</h3>
             <div class="form-row"><label>Mood eyebrow<input name="moodEyebrow" required /></label><label>Mood title<input name="moodTitle" required /></label></div>
-            <div class="form-row"><label>Department 1 title<input name="departmentOneTitle" required /></label><label>Department 1 image URL<input name="departmentOneImage" type="url" required /></label></div>
-            <div class="form-row"><label>Department 2 title<input name="departmentTwoTitle" required /></label><label>Department 2 image URL<input name="departmentTwoImage" type="url" required /></label></div>
-            <div class="form-row"><label>Department 3 title<input name="departmentThreeTitle" required /></label><label>Department 3 image URL<input name="departmentThreeImage" type="url" required /></label></div>
+            <div class="form-row"><label>Department 1 title<input name="departmentOneTitle" required /></label><label class="image-field"><span>Department 1 image URL</span><div class="image-input-row"><input name="departmentOneImage" type="url" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="departmentOneImage" hidden /></label></div></label></div>
+            <div class="form-row"><label>Department 2 title<input name="departmentTwoTitle" required /></label><label class="image-field"><span>Department 2 image URL</span><div class="image-input-row"><input name="departmentTwoImage" type="url" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="departmentTwoImage" hidden /></label></div></label></div>
+            <div class="form-row"><label>Department 3 title<input name="departmentThreeTitle" required /></label><label class="image-field"><span>Department 3 image URL</span><div class="image-input-row"><input name="departmentThreeImage" type="url" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="departmentThreeImage" hidden /></label></div></label></div>
             <div class="form-row"><label>Ticker text 1<input name="tickerOne" required /></label><label>Ticker text 2<input name="tickerTwo" required /></label></div>
             <label>Ticker text 3<input name="tickerThree" required /></label>
             <div class="form-row"><label>Trending eyebrow<input name="trendingEyebrow" required /></label><label>Trending title<input name="trendingTitle" required /></label></div>
             <div class="form-row"><label>Story eyebrow<input name="storyEyebrow" required /></label><label>Story title<input name="storyTitle" required /></label></div>
             <label>Story subtitle<input name="storySubtitle" required /></label>
-            <div class="form-row"><label>Story button<input name="storyButton" required /></label><label>Story image URL<input name="storyImage" type="url" required /></label></div>
+            <div class="form-row"><label>Story button<input name="storyButton" required /></label><label class="image-field"><span>Story image URL</span><div class="image-input-row"><input name="storyImage" type="url" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="storyImage" hidden /></label></div></label></div>
             <div class="form-row"><label>Edit eyebrow<input name="editEyebrow" required /></label><label>Edit title<input name="editTitle" required /></label></div>
             <label>Edit subtitle<input name="editSubtitle" required /></label>
-            <div class="form-row"><label>Edit card 1 title<input name="editOneTitle" required /></label><label>Edit card 1 image URL<input name="editOneImage" type="url" required /></label></div>
-            <div class="form-row"><label>Edit card 2 title<input name="editTwoTitle" required /></label><label>Edit card 2 image URL<input name="editTwoImage" type="url" required /></label></div>
-            <div class="form-row"><label>Edit card 3 title<input name="editThreeTitle" required /></label><label>Edit card 3 image URL<input name="editThreeImage" type="url" required /></label></div>
+            <div class="form-row"><label>Edit card 1 title<input name="editOneTitle" required /></label><label class="image-field"><span>Edit card 1 image URL</span><div class="image-input-row"><input name="editOneImage" type="url" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="editOneImage" hidden /></label></div></label></div>
+            <div class="form-row"><label>Edit card 2 title<input name="editTwoTitle" required /></label><label class="image-field"><span>Edit card 2 image URL</span><div class="image-input-row"><input name="editTwoImage" type="url" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="editTwoImage" hidden /></label></div></label></div>
+            <div class="form-row"><label>Edit card 3 title<input name="editThreeTitle" required /></label><label class="image-field"><span>Edit card 3 image URL</span><div class="image-input-row"><input name="editThreeImage" type="url" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="editThreeImage" hidden /></label></div></label></div>
             <div class="form-row"><label>Instagram eyebrow<input name="instagramEyebrow" required /></label><label>Instagram title<input name="instagramTitle" required /></label></div>
             <h3 class="content-group">Benefits and footer</h3>
             <div class="form-row"><label>Benefit 1 title<input name="benefitOneTitle" required /></label><label>Benefit 1 text<input name="benefitOneText" required /></label></div>
@@ -159,11 +159,11 @@
             <label>Nav: About<input name="navAbout" required /></label>
             <div class="form-row"><label>Action: Search<input name="actionSearch" required /></label><label>Action: Wishlist<input name="actionWishlist" required /></label></div>
             <div class="form-row"><label>Action: Account<input name="actionAccount" required /></label><label>Action: Bag<input name="actionBag" required /></label></div>
-            <div class="form-row"><label>Circle 1 label<input name="chipAllLabel" required /></label><label>Circle 1 image URL<input name="chipAllImage" type="url" required /></label></div>
-            <div class="form-row"><label>Circle 2 label<input name="chipEasternLabel" required /></label><label>Circle 2 image URL<input name="chipEasternImage" type="url" required /></label></div>
-            <div class="form-row"><label>Circle 3 label<input name="chipWesternLabel" required /></label><label>Circle 3 image URL<input name="chipWesternImage" type="url" required /></label></div>
-            <div class="form-row"><label>Circle 4 label<input name="chipShirtsLabel" required /></label><label>Circle 4 image URL<input name="chipShirtsImage" type="url" required /></label></div>
-            <div class="form-row"><label>Circle 5 label<input name="chipSaleLabel" required /></label><label>Circle 5 image URL<input name="chipSaleImage" type="url" required /></label></div>
+            <div class="form-row"><label>Circle 1 label<input name="chipAllLabel" required /></label><label class="image-field"><span>Circle 1 image URL</span><div class="image-input-row"><input name="chipAllImage" type="url" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="chipAllImage" hidden /></label></div></label></div>
+            <div class="form-row"><label>Circle 2 label<input name="chipEasternLabel" required /></label><label class="image-field"><span>Circle 2 image URL</span><div class="image-input-row"><input name="chipEasternImage" type="url" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="chipEasternImage" hidden /></label></div></label></div>
+            <div class="form-row"><label>Circle 3 label<input name="chipWesternLabel" required /></label><label class="image-field"><span>Circle 3 image URL</span><div class="image-input-row"><input name="chipWesternImage" type="url" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="chipWesternImage" hidden /></label></div></label></div>
+            <div class="form-row"><label>Circle 4 label<input name="chipShirtsLabel" required /></label><label class="image-field"><span>Circle 4 image URL</span><div class="image-input-row"><input name="chipShirtsImage" type="url" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="chipShirtsImage" hidden /></label></div></label></div>
+            <div class="form-row"><label>Circle 5 label<input name="chipSaleLabel" required /></label><label class="image-field"><span>Circle 5 image URL</span><div class="image-input-row"><input name="chipSaleImage" type="url" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="chipSaleImage" hidden /></label></div></label></div>
             <div class="save-strip"><button class="primary" type="submit">SAVE CONTENT</button></div>
           </form>
         </section>
@@ -186,7 +186,7 @@
         <label>Product name<input name="name" required /></label>
         <div class="form-row"><label>Category<select name="category"><option>Cord Set - Eastern</option><option>Cord Set - Western</option><option>Shirts</option><option>Sale</option></select></label><label>Badge<input name="badge" placeholder="NEW or -20%" /></label></div>
         <div class="form-row"><label>Price (PKR)<input name="price" type="number" min="0" required /></label><label>Stock units<input name="stock" type="number" min="0" required /></label></div>
-        <label>Product image URL<input name="image" type="url" required /></label>
+        <label class="image-field"><span>Product image URL</span><div class="image-input-row"><input name="image" type="url" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="image" hidden /></label></div></label>
         <label class="check"><input name="active" type="checkbox" checked /> Published on storefront</label>
         <button class="primary" type="submit">SAVE PRODUCT</button>
       </form>
@@ -200,7 +200,7 @@
         <label>Image URL<input name="url" type="url" placeholder="https://..." /></label>
         <p class="or">OR</p>
         <label>Upload from device<input name="file" type="file" accept="image/*" /></label>
-        <small>Uploads are stored in this browser for this local prototype. Use cloud object storage for deployment.</small>
+        <small>Uploads are stored on this server and returned as local `/uploads/...` links.</small>
         <button class="primary" type="submit">ADD PICTURE</button>
       </form>
     </dialog>

@@ -1,9 +1,12 @@
 (function () {
   async function request(path, options = {}) {
+    const headers = { ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}), ...(options.headers || {}) };
+    const isJson = options.body && !options.rawBody;
+    if (isJson && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
     const response = await fetch(path, {
-      headers: { "Content-Type": "application/json", ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}) },
+      headers,
       ...options,
-      body: options.body ? JSON.stringify(options.body) : undefined
+      body: options.body ? (options.rawBody ? options.body : JSON.stringify(options.body)) : undefined
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(payload.error || "Request failed");
@@ -20,6 +23,7 @@
   const adminState = (token) => request("/api/admin/store", { token });
   const saveAdmin = (token, state) => request("/api/admin/store", { method: "PUT", token, body: state });
   const reset = (token) => request("/api/admin/reset", { method: "POST", token });
+  const uploadAdminImage = (token, payload) => request("/api/admin/upload", { method: "POST", token, body: payload });
 
-  window.LariStore = { publicState, createOrder, login, adminState, saveAdmin, reset, makeId };
+  window.LariStore = { publicState, createOrder, login, adminState, saveAdmin, reset, uploadAdminImage, makeId };
 })();

@@ -89,6 +89,68 @@ function isImageField(key) {
   return key.toLowerCase().includes("image");
 }
 
+function imageFieldMarkup(name, label, options = {}) {
+  const required = options.required === false ? "" : "required";
+  const hint = options.hint ? `<small>${options.hint}</small>` : "";
+  return `<label class="image-field">\
+    <span>${label}</span>\
+    <div class="image-input-row">\
+      <input name="${name}" type="url" ${required} placeholder="https://... or upload below" />\
+      <label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="${name}" hidden /></label>\
+    </div>\
+    ${hint}\
+  </label>`;
+}
+
+async function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Image could not be read"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadFile(file) {
+  const image = await fileToDataUrl(file);
+  const result = await LariStore.uploadAdminImage(token, { image, name: file.name });
+  return result.url;
+}
+
+function setInputValue(name, value) {
+  document.querySelectorAll(`[name="${name}"]`).forEach((input) => {
+    input.value = value;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+}
+
+async function pickAndUploadImage(fieldName) {
+  return new Promise((resolve, reject) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.hidden = true;
+    input.addEventListener("change", async () => {
+      try {
+        const file = input.files?.[0];
+        if (!file) {
+          resolve(null);
+          return;
+        }
+        const url = await uploadFile(file);
+        resolve(url);
+      } catch (error) {
+        reject(error);
+      } finally {
+        input.remove();
+      }
+    }, { once: true });
+    document.body.appendChild(input);
+    input.click();
+  });
+}
+
 function showLogin(error = "") {
   document.body.innerHTML = `
     <main class="login-screen">
@@ -97,7 +159,7 @@ function showLogin(error = "") {
         <p class="kicker">SECURE ADMIN AREA</p>
         <h1>Admin login</h1>
         <label>Password<input name="password" type="password" autocomplete="current-password" required autofocus /></label>
-        ${error ? `<p class="login-error">${error}</p>` : ""}
+      ${error ? `<p class="login-error">${error}</p>` : ""}
         <button class="primary" type="submit">LOGIN</button>
         <small>Default local password: lari-admin-2026. Change it with LARI_ADMIN_PASSWORD before deployment.</small>
       </form>
@@ -399,14 +461,15 @@ mediaForm.addEventListener("submit", async (event) => {
     mediaForm.reset();
     await save("Picture added");
   } else if (file) {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      state.gallery.unshift(reader.result);
+    try {
+      const uploadedUrl = await uploadFile(file);
+      state.gallery.unshift(uploadedUrl);
       mediaDialog.close();
       mediaForm.reset();
       await save("Picture uploaded");
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+      toast(error.message);
+    }
   }
 });
 
@@ -428,10 +491,23 @@ document.addEventListener("click", async (event) => {
   if (editSetting) {
     const key = editSetting.dataset.editSetting;
     const current = state.settings[key] || "";
-    const next = prompt(`${isImageField(key) ? "Image URL" : "Text"}: ${labelFromKey(key)}`, current);
-    if (next !== null && next !== current) {
-      state.settings[key] = next.trim();
-      await save(`${labelFromKey(key)} updated`);
+    if (isImageField(key)) {
+      try {
+        const uploadedUrl = await pickAndUploadImage(key);
+        if (uploadedUrl) {
+          state.settings[key] = uploadedUrl;
+          setInputValue(key, uploadedUrl);
+          await save(`${labelFromKey(key)} updated`);
+        }
+      } catch (error) {
+        toast(error.message);
+      }
+    } else {
+      const next = prompt(`Text: ${labelFromKey(key)}`, current);
+      if (next !== null && next !== current) {
+        state.settings[key] = next.trim();
+        await save(`${labelFromKey(key)} updated`);
+      }
     }
   }
   if (toggleSetting) {
@@ -455,6 +531,23 @@ document.addEventListener("change", async (event) => {
   const order = state.orders.find((item) => item.id === event.target.dataset.orderStatus);
   order.status = event.target.value;
   await save("Order status updated");
+});
+
+document.addEventListener("change", async (event) => {
+  const uploadInput = event.target.closest("[data-upload-target]");
+  if (!uploadInput || !uploadInput.files?.length) return;
+  const fieldName = uploadInput.dataset.uploadTarget;
+  try {
+    uploadInput.disabled = true;
+    const url = await uploadFile(uploadInput.files[0]);
+    setInputValue(fieldName, url);
+    toast("Image uploaded");
+  } catch (error) {
+    toast(error.message);
+  } finally {
+    uploadInput.value = "";
+    uploadInput.disabled = false;
+  }
 });
 
 document.querySelector("[data-reset]").addEventListener("click", async () => {

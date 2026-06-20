@@ -9,6 +9,7 @@ const ADMIN_PASSWORD = process.env.LARI_ADMIN_PASSWORD || "lari-admin-2026";
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, "data");
+const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 const STORE_FILE = path.join(DATA_DIR, "store.json");
 const TURSO_DATABASE_URL = process.env.TURSO_DATABASE_URL || "";
 const TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN || "";
@@ -144,6 +145,7 @@ const defaults = {
 function cleanImageSource(value, fallback = "") {
   const source = String(value || fallback).slice(0, 200000);
   if (source.startsWith("data:image/")) return source;
+  if (source.startsWith("/uploads/")) return source;
   try {
     const url = new URL(source);
     return ["http:", "https:"].includes(url.protocol) ? source : fallback;
@@ -154,6 +156,10 @@ function cleanImageSource(value, fallback = "") {
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function ensureUploadsDir() {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
 function securityHeaders(extra = {}) {
@@ -194,6 +200,21 @@ function readBody(req) {
     });
     req.on("error", reject);
   });
+}
+
+function parseDataImage(dataUrl) {
+  const match = String(dataUrl || "").match(/^data:(image\/(?:png|jpeg|jpg|webp|gif));base64,([a-z0-9+/=\r\n]+)$/i);
+  if (!match) throw new Error("Only PNG, JPG, WEBP, and GIF images are supported");
+  const mimeType = match[1].toLowerCase() === "image/jpg" ? "image/jpeg" : match[1].toLowerCase();
+  const bytes = Buffer.from(match[2], "base64");
+  if (!bytes.length) throw new Error("Uploaded image is empty");
+  if (bytes.length > 5 * 1024 * 1024) throw new Error("Uploaded image is too large. Max 5MB.");
+  const extension = { "image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp", "image/gif": ".gif" }[mimeType];
+  return { bytes, extension };
+}
+
+function uploadPath(filename) {
+  return `/uploads/${filename}`;
 }
 
 function requireAdmin(req, res) {
@@ -332,6 +353,16 @@ async function handleApi(req, res) {
     }
   }
 
+  if (req.method === "POST" && req.url === "/api/admin/upload") {
+    if (!requireAdmin(req, res)) return;
+    const body = await readBody(req);
+    const { bytes, extension } = parseDataImage(body.image);
+    ensureUploadsDir();
+    const filename = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${extension}`;
+    fs.writeFileSync(path.join(UPLOADS_DIR, filename), bytes);
+    return send(res, 201, { url: uploadPath(filename) });
+  }
+
   if (req.method === "POST" && req.url === "/api/admin/reset") {
     if (!requireAdmin(req, res)) return;
     return send(res, 200, await database.resetStore());
@@ -342,6 +373,18 @@ async function handleApi(req, res) {
 
 function serveStatic(req, res) {
   const urlPath = decodeURIComponent(new URL(req.url, `http://${req.headers.host}`).pathname);
+  if (urlPath.startsWith("/uploads/")) {
+    const uploadFile = path.normalize(path.join(UPLOADS_DIR, urlPath.replace("/uploads/", "")));
+    const relativeUploadPath = path.relative(UPLOADS_DIR, uploadFile);
+    if (relativeUploadPath.startsWith("..") || path.isAbsolute(relativeUploadPath)) return notFound(res);
+    return fs.readFile(uploadFile, (error, data) => {
+      if (error) return notFound(res);
+      const ext = path.extname(uploadFile).toLowerCase();
+      const contentType = { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".gif": "image/gif" }[ext] || "application/octet-stream";
+      res.writeHead(200, securityHeaders({ "Content-Type": contentType, "Cache-Control": "public, max-age=3600" }));
+      res.end(data);
+    });
+  }
   const requested = urlPath === "/" ? "/index.html" : urlPath;
   const filePath = path.normalize(path.join(ROOT, requested));
   const relativePath = path.relative(ROOT, filePath);
@@ -364,6 +407,7 @@ const server = http.createServer((req, res) => {
 });
 
 (async () => {
+  ensureUploadsDir();
   database = await createDatabase({
     dataDir: DATA_DIR,
     legacyJsonFile: STORE_FILE,
