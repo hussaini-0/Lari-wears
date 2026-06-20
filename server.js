@@ -158,6 +158,11 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function normalizeProductImages(product) {
+  const candidates = Array.isArray(product.images) ? product.images : [product.image];
+  return candidates.map((image) => cleanImageSource(image)).filter(Boolean).slice(0, 5);
+}
+
 function ensureUploadsDir() {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
@@ -279,7 +284,8 @@ const clean = clone(defaults);
     price: Math.max(0, Number(product.price || 0)),
     stock: Math.max(0, Number(product.stock || 0)),
     badge: String(product.badge || "").slice(0, 20),
-    image: cleanImageSource(product.image),
+    images: normalizeProductImages(product),
+    image: normalizeProductImages(product)[0] || "",
     active: Boolean(product.active)
   })) : clean.products;
   clean.gallery = Array.isArray(input.gallery) ? input.gallery.map((image) => cleanImageSource(image)).filter(Boolean).slice(0, 40) : clean.gallery;

@@ -339,6 +339,10 @@ function openProduct(id) {
     if (key === "active") productForm.elements[key].checked = value;
     else productForm.elements[key].value = value;
   });
+  const images = product ? (Array.isArray(product.images) && product.images.length ? product.images : [product.image].filter(Boolean)) : [];
+  for (let index = 0; index < 5; index += 1) {
+    if (productForm.elements[`image${index + 1}`]) productForm.elements[`image${index + 1}`].value = images[index] || "";
+  }
   productDialog.showModal();
 }
 
@@ -356,7 +360,8 @@ pageEditorSelect?.addEventListener("change", renderPageEditor);
 productForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = new FormData(productForm);
-  const product = { id: form.get("id") || LariStore.makeId(form.get("name")), name: form.get("name"), category: form.get("category"), badge: form.get("badge"), price: Number(form.get("price")), stock: Number(form.get("stock")), image: form.get("image"), active: form.get("active") === "on" };
+  const images = [1, 2, 3, 4, 5].map((index) => String(form.get(`image${index}`) || "").trim()).filter(Boolean).slice(0, 5);
+  const product = { id: form.get("id") || LariStore.makeId(form.get("name")), name: form.get("name"), category: form.get("category"), badge: form.get("badge"), price: Number(form.get("price")), stock: Number(form.get("stock")), images, image: images[0] || "", active: form.get("active") === "on" };
   const index = state.products.findIndex((item) => item.id === product.id);
   if (index >= 0) state.products[index] = product;
   else state.products.unshift(product);
@@ -371,10 +376,10 @@ function csvEscape(value) {
 
 function downloadTemplate() {
   const rows = [
-    ["name", "category", "price", "stock", "badge", "image", "active"],
-    ["Blush Eastern Cord Set", "Cord Set - Eastern", "5490", "25", "NEW", "https://example.com/blush-eastern-cord-set.jpg", "true"],
-    ["Black Western Cord Set", "Cord Set - Western", "4990", "12", "", "https://example.com/black-western-cord-set.jpg", "true"],
-    ["Printed Lawn Shirt", "Shirts", "2990", "18", "NEW", "https://example.com/printed-lawn-shirt.jpg", "true"]
+    ["name", "category", "price", "stock", "badge", "image", "image2", "image3", "image4", "image5", "active"],
+    ["Blush Eastern Cord Set", "Cord Set - Eastern", "5490", "25", "NEW", "https://example.com/blush-eastern-cord-set-1.jpg", "https://example.com/blush-eastern-cord-set-2.jpg", "", "", "", "true"],
+    ["Black Western Cord Set", "Cord Set - Western", "4990", "12", "", "https://example.com/black-western-cord-set-1.jpg", "https://example.com/black-western-cord-set-2.jpg", "", "", "", "true"],
+    ["Printed Lawn Shirt", "Shirts", "2990", "18", "NEW", "https://example.com/printed-lawn-shirt-1.jpg", "", "", "", "", "true"]
   ];
   const csv = rows.map((row) => row.map(csvEscape).join(",")).join("\n");
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
@@ -422,6 +427,7 @@ function productsFromCsv(text) {
   const headers = rows[0].map((header) => header.toLowerCase().trim());
   return rows.slice(1).map((row) => {
     const item = Object.fromEntries(headers.map((header, index) => [header, row[index] || ""]));
+    const images = [item.image, item.image2, item.image3, item.image4, item.image5].filter(Boolean).slice(0, 5);
     return {
       id: LariStore.makeId(item.name),
       name: item.name,
@@ -429,7 +435,8 @@ function productsFromCsv(text) {
       price: Number(item.price || 0),
       stock: Number(item.stock || 0),
       badge: item.badge || "",
-      image: item.image || "",
+      images,
+      image: images[0] || "",
       active: !["false", "0", "no", "draft"].includes(String(item.active || "true").toLowerCase())
     };
   }).filter((product) => product.name && product.image && Number.isFinite(product.price) && Number.isFinite(product.stock));

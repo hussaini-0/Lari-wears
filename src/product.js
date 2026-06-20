@@ -14,11 +14,15 @@ async function initProduct() {
   document.title = `LARI | ${product.name}`;
   const name = LariSite.escapeHtml(product.name);
   const category = LariSite.escapeHtml(product.category);
-  const image = LariSite.escapeAttribute(product.image);
+  const images = (Array.isArray(product.images) && product.images.length ? product.images : [product.image]).filter(Boolean);
+  const image = LariSite.escapeAttribute(images[0] || "");
   const productId = LariSite.escapeAttribute(product.id);
   container.innerHTML = `
     <section class="product-detail">
-      <img src="${image}" alt="${name}" />
+      <div class="product-gallery">
+        <img class="product-main-image" src="${image}" alt="${name}" data-product-main-image />
+        ${images.length > 1 ? `<div class="product-thumbs">${images.map((item, index) => `<button type="button" class="product-thumb ${index === 0 ? "active" : ""}" data-product-thumb="${LariSite.escapeAttribute(item)}"><img src="${LariSite.escapeAttribute(item)}" alt="${name} view ${index + 1}" /></button>`).join("")}</div>` : ""}
+      </div>
       <div>
         <span class="eyebrow pink">${category}</span>
         <h1>${name}</h1>
@@ -32,6 +36,10 @@ async function initProduct() {
   [["announcement", ".announcement p"], ["productDescription", ".product-detail div p:nth-of-type(3)"], ["productAddButton", "[data-add-product]"], ["productBackButton", ".product-detail .btn-outline-dark"]].forEach(([key, selector]) => {
     document.querySelectorAll(selector).forEach((item) => (item.hidden = visibility[key] === false));
   });
+  document.querySelectorAll("[data-product-thumb]").forEach((button) => button.addEventListener("click", () => {
+    document.querySelector("[data-product-main-image]").src = button.dataset.productThumb;
+    document.querySelectorAll("[data-product-thumb]").forEach((thumb) => thumb.classList.toggle("active", thumb === button));
+  }));
   LariSite.bindPageAddButtons(state.products);
 }
 

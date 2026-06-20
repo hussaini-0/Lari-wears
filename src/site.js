@@ -32,7 +32,7 @@ function updateCartBadges() {
 
 function addToCart(product) {
   const items = getCart();
-  items.push({ id: product.id, name: product.name, price: product.price, image: product.image });
+  items.push({ id: product.id, name: product.name, price: product.price, image: product.image || product.images?.[0] || "" });
   saveCart(items);
 }
 
@@ -40,7 +40,7 @@ function productCard(product) {
   const id = encodeURIComponent(product.id);
   const name = escapeHtml(product.name);
   const category = escapeHtml(product.category);
-  const image = escapeAttribute(product.image);
+  const image = escapeAttribute(product.image || product.images?.[0] || "");
   const badge = escapeHtml(product.badge);
   return `
     <article class="product-card">
