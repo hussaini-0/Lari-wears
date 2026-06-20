@@ -399,7 +399,8 @@ function serveStatic(req, res) {
     if (error) return notFound(res);
     const ext = path.extname(filePath).toLowerCase();
     const contentType = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "application/javascript; charset=utf-8", ".json": "application/json; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml" }[ext] || "application/octet-stream";
-    res.writeHead(200, securityHeaders({ "Content-Type": contentType, "Cache-Control": ext === ".html" ? "no-cache" : "public, max-age=3600" }));
+    const cacheControl = [".html", ".css", ".js"].includes(ext) ? "no-cache" : "public, max-age=3600";
+    res.writeHead(200, securityHeaders({ "Content-Type": contentType, "Cache-Control": cacheControl }));
     res.end(data);
   });
 }
