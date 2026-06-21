@@ -121,7 +121,7 @@ p {
 .logo-image {
   display: block;
   width: auto;
-  height: 68px;
+  height: 92px;
   object-fit: contain;
 }
 
@@ -1457,7 +1457,7 @@ footer a:not(.logo) {
   }
 
   .logo-image {
-    height: 54px;
+    height: 72px;
   }
 
   .hero {
