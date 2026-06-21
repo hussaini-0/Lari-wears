@@ -111,34 +111,18 @@ p {
 }
 
 .logo {
-  position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   width: max-content;
+  text-decoration: none;
 }
 
-.logo-text {
-  color: var(--yellow);
-  font-family: "Nunito", sans-serif;
-  font-size: 45px;
-  font-weight: 900;
-  line-height: 0.8;
-  letter-spacing: -5px;
-  -webkit-text-stroke: 2px var(--ink);
-  paint-order: stroke fill;
-}
-
-.logo-dot {
-  position: absolute;
-  top: -7px;
-  right: -27px;
-  padding: 3px 5px;
-  border-radius: 20px;
-  background: var(--pink);
-  color: var(--ink);
-  font: 900 8px "Nunito", sans-serif;
-  letter-spacing: 0.2px;
-  transform: rotate(9deg);
+.logo-image {
+  display: block;
+  width: auto;
+  height: 68px;
+  object-fit: contain;
 }
 
 .icon-btn {
@@ -1392,8 +1376,8 @@ footer a:not(.logo) {
     background: var(--ink);
   }
 
-  .logo-text {
-    font-size: 38px;
+  .logo-image {
+    height: 54px;
   }
 
   .hero {
