@@ -89,7 +89,7 @@ p {
 }
 
 .compact-header .header-main {
-  min-height: 84px;
+  min-height: 92px;
 }
 
 .header-left,
@@ -121,7 +121,7 @@ p {
 .logo-image {
   display: block;
   width: auto;
-  height: 92px;
+  height: 82px;
   object-fit: contain;
 }
 
@@ -1167,17 +1167,60 @@ p {
   padding: 50px 0;
 }
 
+.brand-story {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 48px;
+  border: 1px solid var(--line);
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.brand-story h1 {
+  max-width: 980px;
+  margin-bottom: 26px;
+  font-size: clamp(50px, 5vw, 86px);
+  line-height: 0.96;
+  letter-spacing: -5px;
+}
+
+.brand-story > p {
+  max-width: 760px;
+  margin-bottom: 18px;
+  font-size: 18px;
+  line-height: 1.85;
+}
+
+.brand-story h2 {
+  margin: 32px 0 0;
+  font-size: 26px;
+  letter-spacing: -1px;
+}
+
 .info-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 32px;
+  gap: 20px;
+  margin-top: 28px;
 }
 
 .info-cards article {
-  padding: 24px;
+  padding: 28px 24px;
   border: 1px solid var(--line);
   background: var(--soft);
+  border-radius: 16px;
+}
+
+.info-cards h3 {
+  margin-bottom: 14px;
+  font: 900 20px/1.15 "Nunito", sans-serif;
+  letter-spacing: -0.6px;
+}
+
+.info-cards p {
+  margin-bottom: 0;
+  font-size: 16px;
+  line-height: 1.75;
 }
 
 .contact-grid {
@@ -1457,7 +1500,21 @@ footer a:not(.logo) {
   }
 
   .logo-image {
-    height: 72px;
+    height: 64px;
+  }
+
+  .brand-story {
+    padding: 32px 24px;
+  }
+
+  .brand-story h1 {
+    font-size: clamp(40px, 11vw, 58px);
+    letter-spacing: -3px;
+  }
+
+  .brand-story > p,
+  .info-cards p {
+    font-size: 15px;
   }
 
   .hero {
@@ -1488,7 +1545,8 @@ footer a:not(.logo) {
 
   .department-grid,
   .edit-grid,
-  .product-grid {
+  .product-grid,
+  .info-cards {
     display: flex;
     gap: 12px;
     overflow: auto;
