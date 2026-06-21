@@ -13,9 +13,13 @@ const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 const STORE_FILE = path.join(DATA_DIR, "store.json");
 const TURSO_DATABASE_URL = process.env.TURSO_DATABASE_URL || "";
 const TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN || "";
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || "";
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || "";
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || "";
 const sessions = new Map();
 const loginAttempts = new Map();
 let database;
+let cloudinaryClient;
 
 if (IS_PRODUCTION && ADMIN_PASSWORD === "lari-admin-2026") {
   console.error("Refusing to start in production with the default admin password. Set LARI_ADMIN_PASSWORD.");
@@ -258,6 +262,40 @@ function parseDataImage(dataUrl) {
   return { bytes, extension };
 }
 
+function cloudinaryEnabled() {
+  return Boolean(CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET);
+}
+
+function requireCloudinary() {
+  if (!cloudinaryEnabled()) {
+    throw new Error("Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.");
+  }
+  if (!cloudinaryClient) {
+    const { v2: cloudinary } = require("cloudinary");
+    cloudinary.config({
+      cloud_name: CLOUDINARY_CLOUD_NAME,
+      api_key: CLOUDINARY_API_KEY,
+      api_secret: CLOUDINARY_API_SECRET,
+      secure: true
+    });
+    cloudinaryClient = cloudinary;
+  }
+  return cloudinaryClient;
+}
+
+async function uploadToCloudinary(dataUrl, originalName = "") {
+  parseDataImage(dataUrl);
+  const cloudinary = requireCloudinary();
+  const baseName = String(originalName || "lari-image").replace(/\.[^.]+$/, "").replace(/[^a-z0-9-_]+/gi, "-").replace(/(^-|-$)/g, "").toLowerCase().slice(0, 60) || "lari-image";
+  const result = await cloudinary.uploader.upload(dataUrl, {
+    folder: "lari",
+    resource_type: "image",
+    public_id: `${baseName}-${Date.now()}`,
+    overwrite: false
+  });
+  return result.secure_url;
+}
+
 function uploadPath(filename) {
   return `/uploads/${filename}`;
 }
@@ -455,11 +493,8 @@ async function handleApi(req, res) {
   if (req.method === "POST" && req.url === "/api/admin/upload") {
     if (!requireAdmin(req, res)) return;
     const body = await readBody(req);
-    const { bytes, extension } = parseDataImage(body.image);
-    ensureUploadsDir();
-    const filename = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${extension}`;
-    fs.writeFileSync(path.join(UPLOADS_DIR, filename), bytes);
-    return send(res, 201, { url: uploadPath(filename) });
+    const url = await uploadToCloudinary(String(body.image || ""), String(body.name || ""));
+    return send(res, 201, { url });
   }
 
   if (req.method === "POST" && req.url === "/api/admin/reset") {

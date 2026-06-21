@@ -11,6 +11,9 @@ Run with production safeguards enabled:
 ```powershell
 $env:NODE_ENV="production"
 $env:LARI_ADMIN_PASSWORD="replace-with-a-long-random-password"
+$env:CLOUDINARY_CLOUD_NAME="your-cloud-name"
+$env:CLOUDINARY_API_KEY="your-api-key"
+$env:CLOUDINARY_API_SECRET="your-api-secret"
 npm run start:prod
 ```
 
@@ -55,6 +58,7 @@ npm run start:prod
 - Product add, edit, remove, image URL, pricing, category, and stock controls
 - Bulk product import from CSV for adding 100+ articles quickly
 - Gallery picture URL and local upload management
+- Gallery/product/home image upload through Cloudinary with permanent hosted URLs
 - Homepage announcement and hero content editing
 - Order creation from storefront checkout
 - Order fulfilment status management
@@ -71,4 +75,14 @@ See `DELIVERY.md` for the delivery flow and presentation checklist.
 
 ## Remaining Production Requirements
 
-This is now ready for project delivery and can be hosted as a small Node app. A commercial live store should still add a real payment provider, shipping rules, transactional email, a managed database, object storage for uploaded images, backups, monitoring, and automated browser tests.
+This is now ready for project delivery and can be hosted as a small Node app. A commercial live store should still add a real payment provider, shipping rules, transactional email, backups, monitoring, and automated browser tests.
+
+## Cloudinary Uploads
+
+Admin image uploads now require these environment variables:
+
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+
+Without them, `/api/admin/upload` will return a configuration error instead of writing to local server disk.
