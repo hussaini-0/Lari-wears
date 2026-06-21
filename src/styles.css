@@ -975,6 +975,39 @@ p {
   font-weight: 900;
 }
 
+.product-sizes {
+  margin: 18px 0 14px;
+}
+
+.product-sizes span {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.product-sizes div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.product-sizes b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 12px;
+}
+
 .cart-page-grid {
   display: grid;
   grid-template-columns: 1fr 360px;

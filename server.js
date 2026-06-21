@@ -284,6 +284,8 @@ const clean = clone(defaults);
     price: Math.max(0, Number(product.price || 0)),
     stock: Math.max(0, Number(product.stock || 0)),
     badge: String(product.badge || "").slice(0, 20),
+    description: String(product.description || "").slice(0, 2000),
+    sizes: Array.isArray(product.sizes) ? product.sizes.map((size) => String(size || "").slice(0, 20)).filter(Boolean).slice(0, 20) : String(product.sizes || "").split(/[,\n]/).map((size) => size.trim().slice(0, 20)).filter(Boolean).slice(0, 20),
     images: normalizeProductImages(product),
     image: normalizeProductImages(product)[0] || "",
     active: Boolean(product.active)

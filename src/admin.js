@@ -231,7 +231,7 @@ function renderProducts() {
   const query = document.querySelector("[data-product-search]").value.toLowerCase();
   const products = state.products.filter((product) => product.name.toLowerCase().includes(query) || product.category.toLowerCase().includes(query));
   document.querySelector("[data-product-total]").textContent = `${products.length} ARTICLES`;
-  document.querySelector("[data-product-table]").innerHTML = `<table class="data-table"><thead><tr><th>ARTICLE</th><th>CATEGORY</th><th>PRICE</th><th>STOCK</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody>${products.map((product) => `<tr><td><div class="product-cell"><img src="${product.image}" alt="" /><b>${product.name}</b></div></td><td>${product.category}</td><td>${money(product.price)}</td><td>${product.stock}</td><td><span class="pill ${product.active ? "" : "Draft"}">${product.active ? "Published" : "Draft"}</span></td><td><button class="tiny" data-edit-product="${product.id}">EDIT</button> <button class="tiny danger" data-delete-product="${product.id}">REMOVE</button></td></tr>`).join("")}</tbody></table>`;
+  document.querySelector("[data-product-table]").innerHTML = `<table class="data-table"><thead><tr><th>ARTICLE</th><th>CATEGORY</th><th>PRICE</th><th>STOCK</th><th>SIZES</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody>${products.map((product) => `<tr><td><div class="product-cell"><img src="${product.image}" alt="" /><div><b>${product.name}</b>${product.description ? `<br /><small>${String(product.description).slice(0, 70)}</small>` : ""}</div></div></td><td>${product.category}</td><td>${money(product.price)}</td><td>${product.stock}</td><td>${(product.sizes || []).join(", ") || "-"}</td><td><span class="pill ${product.active ? "" : "Draft"}">${product.active ? "Published" : "Draft"}</span></td><td><button class="tiny" data-edit-product="${product.id}">EDIT</button> <button class="tiny danger" data-delete-product="${product.id}">REMOVE</button></td></tr>`).join("")}</tbody></table>`;
 }
 
 function renderMedia() {
@@ -340,6 +340,7 @@ function openProduct(id) {
     else productForm.elements[key].value = value;
   });
   const images = product ? (Array.isArray(product.images) && product.images.length ? product.images : [product.image].filter(Boolean)) : [];
+  if (productForm.elements.sizes) productForm.elements.sizes.value = product?.sizes?.join(", ") || "";
   for (let index = 0; index < 5; index += 1) {
     if (productForm.elements[`image${index + 1}`]) productForm.elements[`image${index + 1}`].value = images[index] || "";
   }
@@ -361,7 +362,8 @@ productForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = new FormData(productForm);
   const images = [1, 2, 3, 4, 5].map((index) => String(form.get(`image${index}`) || "").trim()).filter(Boolean).slice(0, 5);
-  const product = { id: form.get("id") || LariStore.makeId(form.get("name")), name: form.get("name"), category: form.get("category"), badge: form.get("badge"), price: Number(form.get("price")), stock: Number(form.get("stock")), images, image: images[0] || "", active: form.get("active") === "on" };
+  const sizes = String(form.get("sizes") || "").split(/[,\n]/).map((size) => size.trim()).filter(Boolean).slice(0, 20);
+  const product = { id: form.get("id") || LariStore.makeId(form.get("name")), name: form.get("name"), category: form.get("category"), badge: form.get("badge"), price: Number(form.get("price")), stock: Number(form.get("stock")), description: String(form.get("description") || "").trim(), sizes, images, image: images[0] || "", active: form.get("active") === "on" };
   const index = state.products.findIndex((item) => item.id === product.id);
   if (index >= 0) state.products[index] = product;
   else state.products.unshift(product);
@@ -376,10 +378,10 @@ function csvEscape(value) {
 
 function downloadTemplate() {
   const rows = [
-    ["name", "category", "price", "stock", "badge", "image", "image2", "image3", "image4", "image5", "active"],
-    ["Blush Eastern Cord Set", "Cord Set - Eastern", "5490", "25", "NEW", "https://example.com/blush-eastern-cord-set-1.jpg", "https://example.com/blush-eastern-cord-set-2.jpg", "", "", "", "true"],
-    ["Black Western Cord Set", "Cord Set - Western", "4990", "12", "", "https://example.com/black-western-cord-set-1.jpg", "https://example.com/black-western-cord-set-2.jpg", "", "", "", "true"],
-    ["Printed Lawn Shirt", "Shirts", "2990", "18", "NEW", "https://example.com/printed-lawn-shirt-1.jpg", "", "", "", "", "true"]
+    ["name", "category", "price", "stock", "badge", "description", "sizes", "image", "image2", "image3", "image4", "image5", "active"],
+    ["Blush Eastern Cord Set", "Cord Set - Eastern", "5490", "25", "NEW", "Soft cord set with relaxed fit and easy everyday styling.", "S, M, L", "https://example.com/blush-eastern-cord-set-1.jpg", "https://example.com/blush-eastern-cord-set-2.jpg", "", "", "", "true"],
+    ["Black Western Cord Set", "Cord Set - Western", "4990", "12", "", "Structured western cord set with clean silhouette.", "XS, S, M, L", "https://example.com/black-western-cord-set-1.jpg", "https://example.com/black-western-cord-set-2.jpg", "", "", "", "true"],
+    ["Printed Lawn Shirt", "Shirts", "2990", "18", "NEW", "Lightweight shirt for summer wear.", "S, M, L, XL", "https://example.com/printed-lawn-shirt-1.jpg", "", "", "", "", "true"]
   ];
   const csv = rows.map((row) => row.map(csvEscape).join(",")).join("\n");
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
@@ -435,6 +437,8 @@ function productsFromCsv(text) {
       price: Number(item.price || 0),
       stock: Number(item.stock || 0),
       badge: item.badge || "",
+      description: item.description || "",
+      sizes: String(item.sizes || "").split(/[,\n]/).map((size) => size.trim()).filter(Boolean).slice(0, 20),
       images,
       image: images[0] || "",
       active: !["false", "0", "no", "draft"].includes(String(item.active || "true").toLowerCase())

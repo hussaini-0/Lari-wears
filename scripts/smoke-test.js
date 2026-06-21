@@ -87,6 +87,8 @@ async function run() {
       price: 2990,
       stock: 5,
       badge: "",
+      description: "Smoke test description",
+      sizes: ["S", "M", "L"],
       image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=82",
       images: [
         "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=82",

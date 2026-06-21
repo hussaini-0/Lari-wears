@@ -17,6 +17,8 @@ async function initProduct() {
   const images = (Array.isArray(product.images) && product.images.length ? product.images : [product.image]).filter(Boolean);
   const image = LariSite.escapeAttribute(images[0] || "");
   const productId = LariSite.escapeAttribute(product.id);
+  const description = LariSite.escapeHtml(product.description || settings.productDescription);
+  const sizes = Array.isArray(product.sizes) ? product.sizes.filter(Boolean) : [];
   container.innerHTML = `
     <section class="product-detail">
       <div class="product-gallery">
@@ -28,7 +30,8 @@ async function initProduct() {
         <h1>${name}</h1>
         <p class="detail-price">${LariSite.money(product.price)}</p>
         <p>Stock available: ${product.stock}</p>
-        <p>${LariSite.escapeHtml(settings.productDescription)}</p>
+        ${sizes.length ? `<div class="product-sizes"><span>Available sizes</span><div>${sizes.map((size) => `<b>${LariSite.escapeHtml(size)}</b>`).join("")}</div></div>` : ""}
+        <p>${description}</p>
         <button class="btn btn-yellow" data-add-product="${productId}">${LariSite.escapeHtml(settings.productAddButton)}</button>
         <a class="btn btn-outline-dark" href="collection.html">${LariSite.escapeHtml(settings.productBackButton)}</a>
       </div>
