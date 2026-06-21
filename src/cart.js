@@ -6,7 +6,11 @@ function renderCartPage() {
   document.querySelector("[data-cart-page]").innerHTML = items.length ? items.map((item, index) => `
     <article class="cart-line">
       <img src="${LariSite.escapeAttribute(item.image)}" alt="${LariSite.escapeAttribute(item.name)}" />
-      <div><h3>${LariSite.escapeHtml(item.name)}</h3><p>${LariSite.money(item.price)}</p></div>
+      <div>
+        <h3>${LariSite.escapeHtml(item.name)}</h3>
+        ${(item.size || item.color) ? `<small>${[item.size ? `Size: ${LariSite.escapeHtml(item.size)}` : "", item.color ? `Colour: ${LariSite.escapeHtml(item.color)}` : ""].filter(Boolean).join(" · ")}</small>` : ""}
+        <p>${LariSite.money(item.price)}</p>
+      </div>
       <button data-remove-cart="${index}">REMOVE</button>
     </article>`).join("") : `<p>${LariSite.escapeHtml(cartSettings.cartEmptyText || "Your bag is empty.")}</p>`;
   document.querySelector("[data-cart-subtotal]").textContent = LariSite.money(items.reduce((sum, item) => sum + Number(item.price), 0));

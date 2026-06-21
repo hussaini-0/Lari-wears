@@ -88,7 +88,9 @@ async function run() {
       stock: 5,
       badge: "",
       description: "Smoke test description",
+      sizeStock: { S: 2, M: 2, L: 1 },
       sizes: ["S", "M", "L"],
+      colors: ["Black", "White"],
       image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=82",
       images: [
         "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=82",
@@ -106,7 +108,7 @@ async function run() {
     if (!seededProducts.length) throw new Error("No public products available for order test");
     await expectStatus("order create", await request("/api/public/orders", {
       method: "POST",
-      body: { items: [seededProducts[0].id], customer: "Smoke Test Customer" }
+      body: { items: [{ productId: seededProducts[0].id, size: "S", color: "Black", image: seededProducts[0].image }], customer: "Smoke Test Customer" }
     }), 201);
     await expectStatus("reset seed data", await request("/api/admin/reset", {
       method: "POST",

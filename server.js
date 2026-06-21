@@ -163,6 +163,46 @@ function normalizeProductImages(product) {
   return candidates.map((image) => cleanImageSource(image)).filter(Boolean).slice(0, 5);
 }
 
+function normalizeColors(value) {
+  const items = Array.isArray(value) ? value : String(value || "").split(/[,\n]/);
+  return items.map((color) => String(color || "").trim().slice(0, 40)).filter(Boolean).slice(0, 20);
+}
+
+function normalizeSizeStock(value, fallbackStock = 0) {
+  const base = { S: 0, M: 0, L: 0 };
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    for (const key of Object.keys(base)) {
+      base[key] = Math.max(0, Number(value[key] || 0));
+    }
+  }
+  if (!Object.values(base).some((count) => count > 0) && Number(fallbackStock) > 0) {
+    base.S = Math.max(0, Number(fallbackStock || 0));
+  }
+  return base;
+}
+
+function deriveSizes(product, sizeStock) {
+  if (Object.values(sizeStock).some((count) => count > 0)) {
+    return Object.entries(sizeStock).filter(([, count]) => count > 0).map(([size]) => size);
+  }
+  return Array.isArray(product.sizes)
+    ? product.sizes.map((size) => String(size || "").slice(0, 20)).filter(Boolean).slice(0, 20)
+    : String(product.sizes || "").split(/[,\n]/).map((size) => size.trim().slice(0, 20)).filter(Boolean).slice(0, 20);
+}
+
+function productTotalStock(product) {
+  const sizeStock = normalizeSizeStock(product.sizeStock, product.stock);
+  const total = Object.values(sizeStock).reduce((sum, count) => sum + Number(count || 0), 0);
+  return total > 0 ? total : Math.max(0, Number(product.stock || 0));
+}
+
+function productHasVariantOptions(product) {
+  const sizeStock = normalizeSizeStock(product.sizeStock, product.stock);
+  const sizes = deriveSizes(product, sizeStock);
+  const colors = normalizeColors(product.colors);
+  return sizes.length > 0 || colors.length > 0;
+}
+
 function ensureUploadsDir() {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
@@ -254,7 +294,7 @@ async function publicStore() {
   return {
     settings: store.settings,
     visibility: store.visibility || {},
-    products: store.products.filter((product) => product.active && Number(product.stock) > 0),
+    products: store.products.filter((product) => product.active && productTotalStock(product) > 0),
     gallery: store.gallery
   };
 }
@@ -277,19 +317,25 @@ const clean = clone(defaults);
     }))
   };
   clean.visibility = Object.fromEntries(Object.entries(input.visibility || {}).map(([key, value]) => [String(key).slice(0, 80), Boolean(value)]));
-  clean.products = Array.isArray(input.products) ? input.products.map((product) => ({
-    id: String(product.id || crypto.randomUUID()).slice(0, 80),
-    name: String(product.name || "Untitled Product").slice(0, 120),
-    category: String(product.category || "Cord Set - Eastern").slice(0, 40),
-    price: Math.max(0, Number(product.price || 0)),
-    stock: Math.max(0, Number(product.stock || 0)),
-    badge: String(product.badge || "").slice(0, 20),
-    description: String(product.description || "").slice(0, 2000),
-    sizes: Array.isArray(product.sizes) ? product.sizes.map((size) => String(size || "").slice(0, 20)).filter(Boolean).slice(0, 20) : String(product.sizes || "").split(/[,\n]/).map((size) => size.trim().slice(0, 20)).filter(Boolean).slice(0, 20),
-    images: normalizeProductImages(product),
-    image: normalizeProductImages(product)[0] || "",
-    active: Boolean(product.active)
-  })) : clean.products;
+  clean.products = Array.isArray(input.products) ? input.products.map((product) => {
+    const sizeStock = normalizeSizeStock(product.sizeStock, product.stock);
+    const images = normalizeProductImages(product);
+    return {
+      id: String(product.id || crypto.randomUUID()).slice(0, 80),
+      name: String(product.name || "Untitled Product").slice(0, 120),
+      category: String(product.category || "Cord Set - Eastern").slice(0, 40),
+      price: Math.max(0, Number(product.price || 0)),
+      stock: Object.values(sizeStock).reduce((sum, count) => sum + Number(count || 0), 0),
+      badge: String(product.badge || "").slice(0, 20),
+      description: String(product.description || "").slice(0, 2000),
+      sizeStock,
+      sizes: deriveSizes(product, sizeStock),
+      colors: normalizeColors(product.colors),
+      images,
+      image: images[0] || "",
+      active: Boolean(product.active)
+    };
+  }) : clean.products;
   clean.gallery = Array.isArray(input.gallery) ? input.gallery.map((image) => cleanImageSource(image)).filter(Boolean).slice(0, 40) : clean.gallery;
   clean.orders = Array.isArray(input.orders) ? input.orders.map((order) => ({
     id: String(order.id || `LARI-${Date.now()}`).slice(0, 40),
@@ -302,7 +348,15 @@ const clean = clone(defaults);
     total: Math.max(0, Number(order.total || 0)),
     status: ["Processing", "Payment Pending", "Paid", "Shipped", "Delivered", "Cancelled"].includes(order.status) ? order.status : "Processing",
     date: String(order.date || new Date().toISOString().slice(0, 10)).slice(0, 20),
-    items: Array.isArray(order.items) ? order.items : []
+    items: Array.isArray(order.items) ? order.items.map((item) => ({
+      productId: String(item.productId || item.id || "").slice(0, 80),
+      name: String(item.name || "").slice(0, 120),
+      price: Math.max(0, Number(item.price || 0)),
+      quantity: Math.max(1, Number(item.quantity || 1)),
+      size: String(item.size || "").slice(0, 10),
+      color: String(item.color || "").slice(0, 40),
+      image: cleanImageSource(item.image || "")
+    })) : []
   })) : clean.orders;
   return clean;
 }
@@ -325,14 +379,43 @@ async function handleApi(req, res) {
 
   if (req.method === "POST" && req.url === "/api/public/orders") {
     const body = await readBody(req);
-    const productIds = Array.isArray(body.items) ? body.items.map(String) : [];
     const store = await database.getStore();
-    const products = productIds.map((id) => store.products.find((product) => product.id === id && product.active)).filter(Boolean);
-    if (!products.length) return send(res, 400, { error: "No valid products in order" });
-    for (const product of products) {
-      if (Number(product.stock) < 1) return send(res, 409, { error: `${product.name} is out of stock` });
+    const rawItems = Array.isArray(body.items) ? body.items : [];
+    const items = rawItems.map((item) => typeof item === "string" ? { productId: item } : item).filter((item) => item && item.productId);
+    if (!items.length) return send(res, 400, { error: "No valid products in order" });
+    const lineItems = [];
+    for (const item of items) {
+      const product = store.products.find((entry) => entry.id === String(item.productId) && entry.active);
+      if (!product) return send(res, 400, { error: "One or more products are unavailable" });
+      const sizeStock = normalizeSizeStock(product.sizeStock, product.stock);
+      const availableSizes = deriveSizes(product, sizeStock);
+      const availableColors = normalizeColors(product.colors);
+      const size = String(item.size || "").trim().toUpperCase();
+      const color = String(item.color || "").trim();
+      if (availableSizes.length && !availableSizes.includes(size)) {
+        return send(res, 400, { error: `${product.name} requires a valid size selection` });
+      }
+      if (availableColors.length && !availableColors.includes(color)) {
+        return send(res, 400, { error: `${product.name} requires a valid colour selection` });
+      }
+      if (availableSizes.length) {
+        if (Number(sizeStock[size] || 0) < 1) return send(res, 409, { error: `${product.name} in size ${size} is out of stock` });
+        product.sizeStock = sizeStock;
+        product.sizeStock[size] = Math.max(0, Number(product.sizeStock[size] || 0) - 1);
+        product.sizes = deriveSizes(product, product.sizeStock);
+        product.stock = Object.values(product.sizeStock).reduce((sum, count) => sum + Number(count || 0), 0);
+      } else if (Number(product.stock) < 1) {
+        return send(res, 409, { error: `${product.name} is out of stock` });
+      } else {
+        product.stock = Math.max(0, Number(product.stock) - 1);
+      }
+      lineItems.push({
+        product,
+        size,
+        color,
+        image: cleanImageSource(item.image || product.image || product.images?.[0] || "")
+      });
     }
-    for (const product of products) product.stock = Math.max(0, Number(product.stock) - 1);
     const order = {
       id: nextOrderId(store.orders),
       customer: String(body.customer || "Online Customer").slice(0, 120),
@@ -341,10 +424,18 @@ async function handleApi(req, res) {
       address: String(body.address || "").slice(0, 300),
       payment: String(body.payment || "Cash on Delivery").slice(0, 80),
       paymentProof: String(body.paymentProof || "").slice(0, 300),
-      total: products.reduce((sum, product) => sum + Number(product.price), 0),
+      total: lineItems.reduce((sum, item) => sum + Number(item.product.price), 0),
       status: ["Bank Transfer", "Easypaisa", "JazzCash"].includes(String(body.payment || "")) ? "Payment Pending" : "Processing",
       date: new Date().toISOString().slice(0, 10),
-      items: products.map((product) => ({ productId: product.id, name: product.name, price: product.price, quantity: 1 }))
+      items: lineItems.map((item) => ({
+        productId: item.product.id,
+        name: item.product.name,
+        price: item.product.price,
+        quantity: 1,
+        size: item.size,
+        color: item.color,
+        image: item.image
+      }))
     };
     store.orders.unshift(order);
     await database.saveStore(store);

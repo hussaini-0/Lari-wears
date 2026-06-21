@@ -23,6 +23,14 @@ function rowMap(rows, keyName, valueName) {
   return Object.fromEntries(rows.map((row) => [row[keyName], row[valueName]]));
 }
 
+function safeJsonParse(value, fallback) {
+  try {
+    return value ? JSON.parse(value) : fallback;
+  } catch (error) {
+    return fallback;
+  }
+}
+
 async function createDatabase({ dataDir, legacyJsonFile, defaults, databaseUrl, authToken }) {
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
   const localFile = path.join(dataDir, "store-local.db");
@@ -81,6 +89,21 @@ async function createDatabase({ dataDir, legacyJsonFile, defaults, databaseUrl, 
     )`
   ], "write");
 
+  async function ensureColumn(table, column, definition) {
+    const info = await client.execute(`PRAGMA table_info(${table})`);
+    if (info.rows.some((row) => row.name === column)) return;
+    await client.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+
+  await ensureColumn("products", "description", "TEXT NOT NULL DEFAULT ''");
+  await ensureColumn("products", "sizes", "TEXT NOT NULL DEFAULT '[]'");
+  await ensureColumn("products", "images", "TEXT NOT NULL DEFAULT '[]'");
+  await ensureColumn("products", "colors", "TEXT NOT NULL DEFAULT '[]'");
+  await ensureColumn("products", "sizeStock", "TEXT NOT NULL DEFAULT '{}'");
+  await ensureColumn("order_items", "size", "TEXT NOT NULL DEFAULT ''");
+  await ensureColumn("order_items", "color", "TEXT NOT NULL DEFAULT ''");
+  await ensureColumn("order_items", "image", "TEXT NOT NULL DEFAULT ''");
+
   async function replaceStore(store) {
     await client.batch([
       "DELETE FROM settings",
@@ -101,8 +124,8 @@ async function createDatabase({ dataDir, legacyJsonFile, defaults, databaseUrl, 
 
     for (const product of store.products || []) {
       await client.execute({
-        sql: `INSERT INTO products (id, name, category, price, stock, badge, image, active)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        sql: `INSERT INTO products (id, name, category, price, stock, badge, image, active, description, sizes, images, colors, sizeStock)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           String(product.id),
           String(product.name),
@@ -111,7 +134,12 @@ async function createDatabase({ dataDir, legacyJsonFile, defaults, databaseUrl, 
           Number(product.stock),
           String(product.badge || ""),
           String(product.image || ""),
-          product.active ? 1 : 0
+          product.active ? 1 : 0,
+          String(product.description || ""),
+          JSON.stringify(Array.isArray(product.sizes) ? product.sizes : []),
+          JSON.stringify(Array.isArray(product.images) ? product.images : []),
+          JSON.stringify(Array.isArray(product.colors) ? product.colors : []),
+          JSON.stringify(product.sizeStock && typeof product.sizeStock === "object" ? product.sizeStock : {})
         ]
       });
     }
@@ -139,15 +167,18 @@ async function createDatabase({ dataDir, legacyJsonFile, defaults, databaseUrl, 
       });
       for (const [index, item] of (order.items || []).entries()) {
         await client.execute({
-          sql: `INSERT INTO order_items (order_id, position, productId, name, price, quantity)
-                VALUES (?, ?, ?, ?, ?, ?)`,
+          sql: `INSERT INTO order_items (order_id, position, productId, name, price, quantity, size, color, image)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           args: [
             String(order.id),
             index,
             String(item.productId || ""),
             String(item.name || ""),
             Number(item.price || 0),
-            Number(item.quantity || 1)
+            Number(item.quantity || 1),
+            String(item.size || ""),
+            String(item.color || ""),
+            String(item.image || "")
           ]
         });
       }
@@ -161,14 +192,14 @@ async function createDatabase({ dataDir, legacyJsonFile, defaults, databaseUrl, 
   async function getStore() {
     const settingsRows = await client.execute("SELECT key, value FROM settings");
     const visibilityRows = await client.execute("SELECT key, is_visible FROM visibility");
-    const productRows = await client.execute("SELECT id, name, category, price, stock, badge, image, active FROM products ORDER BY rowid ASC");
+    const productRows = await client.execute("SELECT id, name, category, price, stock, badge, image, active, description, sizes, images, colors, sizeStock FROM products ORDER BY rowid ASC");
     const galleryRows = await client.execute("SELECT image FROM gallery ORDER BY position ASC");
     const orderRows = await client.execute(`
       SELECT id, customer, email, phone, address, payment, paymentProof, total, status, date
       FROM orders ORDER BY rowid DESC
     `);
     const itemRows = await client.execute(`
-      SELECT order_id, position, productId, name, price, quantity
+      SELECT order_id, position, productId, name, price, quantity, size, color, image
       FROM order_items ORDER BY order_id ASC, position ASC
     `);
 
@@ -179,7 +210,10 @@ async function createDatabase({ dataDir, legacyJsonFile, defaults, databaseUrl, 
         productId: row.productId,
         name: row.name,
         price: Number(row.price),
-        quantity: Number(row.quantity)
+        quantity: Number(row.quantity),
+        size: row.size || "",
+        color: row.color || "",
+        image: row.image || ""
       });
     }
 
@@ -190,6 +224,11 @@ async function createDatabase({ dataDir, legacyJsonFile, defaults, databaseUrl, 
         ...row,
         price: Number(row.price),
         stock: Number(row.stock),
+        description: row.description || "",
+        sizes: safeJsonParse(row.sizes, []),
+        images: safeJsonParse(row.images, []),
+        colors: safeJsonParse(row.colors, []),
+        sizeStock: safeJsonParse(row.sizeStock, {}),
         active: Number(row.active) === 1
       })),
       gallery: galleryRows.rows.map((row) => row.image),

@@ -44,14 +44,19 @@ function openPanel(panel) {
 function renderCart() {
   counts.forEach((count) => (count.textContent = items.length));
   cartEmpty.style.display = items.length ? "none" : "block";
-  cartItems.innerHTML = items.map((item) => `<div class="cart-item"><b>${esc(item.name)}</b><br /><small>${homeMoney(item.price)}</small></div>`).join("");
+  cartItems.innerHTML = items.map((item) => `<div class="cart-item"><b>${esc(item.name)}</b>${item.size || item.color ? `<br /><small>${esc([item.size ? `Size: ${item.size}` : "", item.color ? `Colour: ${item.color}` : ""].filter(Boolean).join(" · "))}</small>` : ""}<br /><small>${homeMoney(item.price)}</small></div>`).join("");
 }
 
 function bindProducts() {
   document.querySelectorAll("[data-add]").forEach((button) => button.addEventListener("click", () => {
     const product = catalog.find((item) => item.id === button.dataset.product);
     if (!product) return;
-    items.push(product);
+    if (LariSite.productHasVariants(product)) {
+      location.href = `product.html?id=${encodeURIComponent(product.id)}`;
+      return;
+    }
+    LariSite.addToCart(product);
+    items = LariSite.getCart();
     renderCart();
     button.textContent = "ADDED";
     setTimeout(() => (button.textContent = "QUICK ADD"), 1200);
@@ -135,7 +140,7 @@ function renderStorefront(state) {
         <img src="${attr(product.image)}" alt="${attr(product.name)}" />
         ${product.badge ? `<span class="badge ${String(product.badge).includes("%") ? "sale" : ""}">${esc(product.badge)}</span>` : ""}
         <button class="wish" aria-label="Add ${attr(product.name)} to wishlist">LOVE</button>
-        <button class="quick-add" data-add data-product="${attr(product.id)}">QUICK ADD</button>
+        <button class="quick-add" data-add data-product="${attr(product.id)}">${LariSite.productHasVariants(product) ? "SELECT OPTIONS" : "QUICK ADD"}</button>
       </div>
       <div class="product-info"><h3><a href="product.html?id=${encodeURIComponent(product.id)}">${esc(product.name)}</a></h3><p>${homeMoney(product.price)}</p><div class="swatches"><i></i><i></i><i></i></div></div>
     </article>`).join("") || "<p>No products are published yet.</p>";
@@ -164,8 +169,13 @@ document.querySelector(".newsletter form").addEventListener("submit", (event) =>
 document.querySelector("[data-checkout]").addEventListener("click", async () => {
   if (!items.length) return;
   try {
-    await LariStore.createOrder({ items: items.map((item) => item.id), customer: "Online Customer", payment: "Cash on Delivery" });
+    await LariStore.createOrder({
+      items: items.map((item) => ({ productId: item.id, size: item.size || "", color: item.color || "", image: item.image || "" })),
+      customer: "Online Customer",
+      payment: "Cash on Delivery"
+    });
     items = [];
+    LariSite.saveCart([]);
     renderCart();
     closeAll();
     await refreshStorefront();
@@ -175,3 +185,5 @@ document.querySelector("[data-checkout]").addEventListener("click", async () => 
   }
 });
 refreshStorefront();
+items = LariSite.getCart();
+renderCart();

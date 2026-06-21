@@ -185,9 +185,14 @@
         <input type="hidden" name="id" />
         <label>Product name<input name="name" required /></label>
         <div class="form-row"><label>Category<select name="category"><option>Cord Set - Eastern</option><option>Cord Set - Western</option><option>Shirts</option><option>Sale</option></select></label><label>Badge<input name="badge" placeholder="NEW or -20%" /></label></div>
-        <div class="form-row"><label>Price (PKR)<input name="price" type="number" min="0" required /></label><label>Stock units<input name="stock" type="number" min="0" required /></label></div>
+        <div class="form-row"><label>Price (PKR)<input name="price" type="number" min="0" required /></label><label>Total stock<input name="stock" type="number" min="0" readonly /></label></div>
         <label>Product description<textarea name="description" rows="5" placeholder="Fabric, fit, styling notes, care details..."></textarea></label>
-        <label>Available sizes<input name="sizes" type="text" placeholder="XS, S, M, L, XL" /></label>
+        <div class="form-row form-row-3">
+          <label>Size S stock<input name="sizeStockS" type="number" min="0" value="0" required /></label>
+          <label>Size M stock<input name="sizeStockM" type="number" min="0" value="0" required /></label>
+          <label>Size L stock<input name="sizeStockL" type="number" min="0" value="0" required /></label>
+        </div>
+        <label>Available colours<input name="colors" type="text" placeholder="Black, Pink, Olive" /></label>
         <label class="image-field"><span>Product image 1 URL</span><div class="image-input-row"><input name="image1" type="text" required /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="image1" hidden /></label></div></label>
         <label class="image-field"><span>Product image 2 URL</span><div class="image-input-row"><input name="image2" type="text" /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="image2" hidden /></label></div></label>
         <label class="image-field"><span>Product image 3 URL</span><div class="image-input-row"><input name="image3" type="text" /><label class="upload-btn">UPLOAD<input type="file" accept="image/*" data-upload-target="image3" hidden /></label></div></label>
@@ -217,12 +222,12 @@
       <h2>Add many articles from CSV</h2>
       <div class="import-help">
         <p>Prepare products in Excel or Google Sheets, export as CSV, then upload or paste here.</p>
-        <p><b>Columns:</b> name, category, price, stock, badge, image, active</p>
+        <p><b>Columns:</b> name, category, price, badge, description, colors, s_stock, m_stock, l_stock, image, image2, image3, image4, image5, active</p>
       </div>
       <form data-import-form>
         <label>Upload CSV file<input name="file" type="file" accept=".csv,text/csv" /></label>
         <p class="or">OR</p>
-        <label>Paste CSV content<textarea name="csv" rows="9" placeholder="name,category,price,stock,badge,image,active"></textarea></label>
+        <label>Paste CSV content<textarea name="csv" rows="9" placeholder="name,category,price,badge,description,colors,s_stock,m_stock,l_stock,image,image2,image3,image4,image5,active"></textarea></label>
         <div class="import-actions">
           <button class="secondary" type="button" data-action="download-template">DOWNLOAD TEMPLATE</button>
           <button class="primary" type="submit">IMPORT ARTICLES</button>

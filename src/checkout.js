@@ -37,7 +37,12 @@ document.querySelector("[data-checkout-form]").addEventListener("submit", async 
   try {
     const form = new FormData(event.currentTarget);
     const result = await LariStore.createOrder({
-      items: items.map((item) => item.id),
+      items: items.map((item) => ({
+        productId: item.id,
+        size: item.size || "",
+        color: item.color || "",
+        image: item.image || ""
+      })),
       customer: form.get("customer"),
       email: form.get("email"),
       phone: form.get("phone"),

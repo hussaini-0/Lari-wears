@@ -30,10 +30,23 @@ function updateCartBadges() {
   });
 }
 
-function addToCart(product) {
+function addToCart(product, selection = {}) {
   const items = getCart();
-  items.push({ id: product.id, name: product.name, price: product.price, image: product.image || product.images?.[0] || "" });
+  items.push({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    image: selection.image || product.image || product.images?.[0] || "",
+    size: selection.size || "",
+    color: selection.color || ""
+  });
   saveCart(items);
+}
+
+function productHasVariants(product) {
+  const sizes = Array.isArray(product.sizes) ? product.sizes.filter(Boolean) : [];
+  const colors = Array.isArray(product.colors) ? product.colors.filter(Boolean) : [];
+  return sizes.length > 0 || colors.length > 0;
 }
 
 function productCard(product) {
@@ -42,6 +55,7 @@ function productCard(product) {
   const category = escapeHtml(product.category);
   const image = escapeAttribute(product.image || product.images?.[0] || "");
   const badge = escapeHtml(product.badge);
+  const cta = productHasVariants(product) ? "SELECT OPTIONS" : "ADD TO BAG";
   return `
     <article class="product-card">
       <a class="product-image" href="product.html?id=${id}">
@@ -53,7 +67,7 @@ function productCard(product) {
         <h3><a href="product.html?id=${id}">${name}</a></h3>
         <small>${category}</small>
         <p>${money(product.price)}</p>
-        <button class="quick-add inline-add" data-add-product="${escapeAttribute(product.id)}">ADD TO BAG</button>
+        <button class="quick-add inline-add" data-add-product="${escapeAttribute(product.id)}">${cta}</button>
       </div>
     </article>`;
 }
@@ -63,6 +77,10 @@ function bindPageAddButtons(products) {
     button.addEventListener("click", () => {
       const product = products.find((item) => item.id === button.dataset.addProduct);
       if (!product) return;
+      if (productHasVariants(product)) {
+        location.href = `product.html?id=${encodeURIComponent(product.id)}`;
+        return;
+      }
       addToCart(product);
       button.textContent = "ADDED";
       setTimeout(() => (button.textContent = "ADD TO BAG"), 1000);
@@ -127,4 +145,4 @@ async function applyManagedContent() {
 updateCartBadges();
 setActiveNav();
 applyManagedContent().catch(() => {});
-window.LariSite = { money, escapeHtml, escapeAttribute, getCart, saveCart, addToCart, productCard, bindPageAddButtons, updateCartBadges };
+window.LariSite = { money, escapeHtml, escapeAttribute, getCart, saveCart, addToCart, productCard, bindPageAddButtons, updateCartBadges, productHasVariants };
