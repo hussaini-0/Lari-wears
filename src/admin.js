@@ -72,7 +72,7 @@ const pageEditorPages = {
     label: "Contact page",
     url: "contact.html",
     sections: [
-      ["Contact content", ["contactAnnouncement", "contactEyebrow", "contactTitle", "contactBody", "shipmentText", "returnsText", "paymentsText", "deliveryText"]]
+      ["Contact content", ["contactAnnouncement", "contactEyebrow", "contactTitle", "contactBody", "officeAddress", "officePhone", "shipmentText", "returnsText", "paymentsText", "deliveryText"]]
     ]
   }
 };

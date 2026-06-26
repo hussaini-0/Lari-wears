@@ -131,12 +131,14 @@ async function applyManagedContent() {
     copy.querySelectorAll("p").forEach((paragraph) => paragraph.remove());
     copy.insertAdjacentHTML("beforeend", `
       ${paragraphHtml(settings.contactBody)}
+      <p><b>Office address:</b> ${escapeHtml(settings.officeAddress)}</p>
+      <p><b>Contact number:</b> ${escapeHtml(settings.officePhone)}</p>
       <p><b>Shipment:</b> ${escapeHtml(settings.shipmentText)}</p>
       <p><b>Returns:</b> ${escapeHtml(settings.returnsText)}</p>
       <p><b>Payments:</b> ${escapeHtml(settings.paymentsText)}</p>
       <p><b>Delivery:</b> ${escapeHtml(settings.deliveryText)}</p>
     `);
-    [["contactAnnouncement", ".announcement p"], ["contactEyebrow", ".contact-grid .eyebrow"], ["contactTitle", ".contact-grid h1"], ["contactBody", ".contact-grid div > p:first-of-type"], ["shipmentText", ".contact-grid div > p:nth-of-type(2)"], ["returnsText", ".contact-grid div > p:nth-of-type(3)"], ["paymentsText", ".contact-grid div > p:nth-of-type(4)"], ["deliveryText", ".contact-grid div > p:nth-of-type(5)"]].forEach(([key, selector]) => {
+    [["contactAnnouncement", ".announcement p"], ["contactEyebrow", ".contact-grid .eyebrow"], ["contactTitle", ".contact-grid h1"], ["contactBody", ".contact-grid div > p:first-of-type"], ["officeAddress", ".contact-grid div > p:nth-of-type(2)"], ["officePhone", ".contact-grid div > p:nth-of-type(3)"], ["shipmentText", ".contact-grid div > p:nth-of-type(4)"], ["returnsText", ".contact-grid div > p:nth-of-type(5)"], ["paymentsText", ".contact-grid div > p:nth-of-type(6)"], ["deliveryText", ".contact-grid div > p:nth-of-type(7)"]].forEach(([key, selector]) => {
       document.querySelectorAll(selector).forEach((item) => (item.hidden = visibility[key] === false));
     });
   }

@@ -85,6 +85,8 @@ const defaults = {
     contactEyebrow: "CONTACT",
     contactTitle: "Need help with an order?",
     contactBody: "LARI provides support through WhatsApp and is available 24/7 for order questions, sizing help, delivery updates, and general support.",
+    officeAddress: "Add your local office address here before payment-gateway review.",
+    officePhone: "Add your public contact number here before payment-gateway review.",
     shipmentText: "7-14 working days.",
     returnsText: "No return policy.",
     paymentsText: "Cash on delivery and online transfer.",
