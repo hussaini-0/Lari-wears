@@ -1197,6 +1197,22 @@ p {
   letter-spacing: -1px;
 }
 
+.policy-page h1 {
+  max-width: 900px;
+  font-size: clamp(42px, 4.6vw, 68px);
+}
+
+.policy-page h2 {
+  margin-top: 34px;
+  margin-bottom: 12px;
+  font: 900 24px/1.15 "Nunito", sans-serif;
+}
+
+.policy-page p {
+  max-width: 860px;
+  margin-bottom: 14px;
+}
+
 .info-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
